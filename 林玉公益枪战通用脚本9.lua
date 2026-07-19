@@ -702,7 +702,7 @@ local function createFeaturePage(name, title, desc, accent)
     page.BackgroundTransparency = 1
     page.ScrollBarThickness = 4
     page.ScrollBarImageColor3 = accent
-    page.CanvasSize = UDim2.new(0, 0, 0, 0)
+    page.CanvasSize = UDim2.new(0, 0, 0, 500)
     page.Visible = false
     page.ZIndex = 53
     page.Parent = content
@@ -761,7 +761,6 @@ local function createFeaturePage(name, title, desc, accent)
     container.BackgroundTransparency = 1
     container.LayoutOrder = 4
     container.ZIndex = 54
-    container.AutomaticSize = Enum.AutomaticSize.Y
     container.Parent = page
 
     local containerLayout = Instance.new("UIListLayout")
@@ -770,13 +769,19 @@ local function createFeaturePage(name, title, desc, accent)
     containerLayout.Parent = container
 
     local function updateCanvas()
-        task.wait()
-        local totalH = layout.AbsoluteContentSize.Y + padding.PaddingTop.Offset + padding.PaddingBottom.Offset
-        page.CanvasSize = UDim2.new(0, 0, 0, math.max(totalH, 100))
+        local containerH = containerLayout.AbsoluteContentSize.Y
+        container.Size = UDim2.new(1, 0, 0, containerH)
+        local totalH = layout.AbsoluteContentSize.Y + 20
+        page.CanvasSize = UDim2.new(0, 0, 0, math.max(totalH, 1))
     end
-    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
-    containerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
-    task.delay(0.2, updateCanvas)
+
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        task.defer(updateCanvas)
+    end)
+    containerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        task.defer(updateCanvas)
+    end)
+    task.defer(updateCanvas)
 
     return page
 end
@@ -875,12 +880,13 @@ local function createNoticePage()
     noticeText.Parent = card
 
     local function updateCanvas()
-        task.wait()
-        local totalH = layout.AbsoluteContentSize.Y + padding.PaddingTop.Offset + padding.PaddingBottom.Offset
-        page.CanvasSize = UDim2.new(0, 0, 0, math.max(totalH, 100))
+        local totalH = layout.AbsoluteContentSize.Y + 20
+        page.CanvasSize = UDim2.new(0, 0, 0, math.max(totalH, 1))
     end
-    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
-    task.delay(0.2, updateCanvas)
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        task.defer(updateCanvas)
+    end)
+    task.defer(updateCanvas)
 
     return page
 end
@@ -1608,34 +1614,6 @@ local success, err = pcall(function()
         local method = getnamecallmethod()
         local args = {...}
 
-        -- 静默自瞄：不动视野，直接返回命中结果
-        if SilentAimConfig.Enabled and (method == "Raycast" or method == "FindPartOnRay") and not checkcaller() and self == Workspace then
-            local origin, direction
-            if method == "Raycast" then
-                origin = args[1]
-                direction = args[2]
-            else
-                local ray = args[1]
-                if typeof(ray) == "Ray" then
-                    origin = ray.Origin
-                    direction = ray.Direction
-                end
-            end
-
-            if origin and direction then
-                local silentTarget = getSilentAimTarget()
-                if silentTarget then
-                    local targetPos = silentTarget.Position
-                    return {
-                        Instance = silentTarget,
-                        Position = targetPos,
-                        Normal = (targetPos - origin).Unit,
-                        Material = Enum.Material.Plastic
-                    }
-                end
-            end
-        end
-
         -- 子弹追踪
         if BulletConfig.Enabled and (method == "Raycast" or method == "FindPartOnRay") and not checkcaller() and self == Workspace then
             local origin, direction
@@ -1674,6 +1652,40 @@ local success, err = pcall(function()
         return oldHook(self, ...)
     end)
 end)
+
+-- 静默自瞄：用 hookfunction 稳定 hook workspace.Raycast
+local oldRaycast = nil
+local oldFindPartOnRay = nil
+
+local function setupSilentAimHooks()
+    if oldRaycast then return end
+
+    oldRaycast = hookfunction(Workspace.Raycast, function(self, origin, direction, ...)
+        if SilentAimConfig.Enabled and self == Workspace then
+            local silentTarget = getSilentAimTarget()
+            if silentTarget then
+                local targetPos = silentTarget.Position
+                local newDirection = (targetPos - origin).Unit * direction.Magnitude
+                return oldRaycast(self, origin, newDirection, ...)
+            end
+        end
+        return oldRaycast(self, origin, direction, ...)
+    end)
+
+    oldFindPartOnRay = hookfunction(Workspace.FindPartOnRay, function(self, ray, ...)
+        if SilentAimConfig.Enabled and self == Workspace and typeof(ray) == "Ray" then
+            local silentTarget = getSilentAimTarget()
+            if silentTarget then
+                local targetPos = silentTarget.Position
+                local newDirection = (targetPos - ray.Origin).Unit * ray.Direction.Magnitude
+                return oldFindPartOnRay(self, Ray.new(ray.Origin, newDirection), ...)
+            end
+        end
+        return oldFindPartOnRay(self, ray, ...)
+    end)
+end
+
+pcall(setupSilentAimHooks)
 
 local BulletTargetText = Drawing.new("Text")
 BulletTargetText.Visible = false
