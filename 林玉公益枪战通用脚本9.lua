@@ -75,6 +75,17 @@ local AimConfig = {
     Smoothness = 5,
 }
 
+local SilentAimConfig = {
+    Enabled = false,
+    FOV = 150,
+    Distance = 500,
+    Priority = "FOV距离",
+    CircleColor = Color3.fromRGB(0, 255, 100),
+    VisCheck = true,
+    TargetPart = "Head",
+    TeamCheck = false,
+}
+
 local BulletConfig = {
     Enabled = false,
     FOV = 60,
@@ -90,10 +101,7 @@ local MiscConfig = {
     FireRate = false,
     FireRateValue = 0.05,
     TeleportEnemies = false,
-    TeleportDistance = 35,
-    NoRecoil = false,
-    NoSpread = false,
-    FastReload = false,
+    TeleportDistance = 5,
     KillAura = false,
     KillAuraRange = 50,
     KillAuraPriority = "距离优先",
@@ -106,6 +114,14 @@ FOV_Circle.Color = AimConfig.CircleColor
 FOV_Circle.Transparency = 0.7
 FOV_Circle.Filled = false
 FOV_Circle.NumSides = 64
+
+local SilentFOV_Circle = Drawing.new("Circle")
+SilentFOV_Circle.Visible = false
+SilentFOV_Circle.Thickness = 2
+SilentFOV_Circle.Color = SilentAimConfig.CircleColor
+SilentFOV_Circle.Transparency = 0.7
+SilentFOV_Circle.Filled = false
+SilentFOV_Circle.NumSides = 64
 
 local BulletFOV_Circle = Drawing.new("Circle")
 BulletFOV_Circle.Visible = false
@@ -311,6 +327,7 @@ local navItems = {
     {name = "公告", icon = "📢"},
     {name = "绘制", icon = "🎨"},
     {name = "自瞄", icon = "🎯"},
+    {name = "静默", icon = "🤫"},
     {name = "子追", icon = "🔫"},
     {name = "功能", icon = "⚡"},
 }
@@ -1536,12 +1553,94 @@ local function getClosestHead()
     return bestHead
 end
 
+local function getSilentAimTarget()
+    local bestTarget = nil
+    local bestScore = math.huge
+    local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    local myHrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    local myPos = myHrp and myHrp.Position or Camera.CFrame.Position
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr == player or not plr.Character then continue end
+        local char = plr.Character
+        local targetPart = char:FindFirstChild(SilentAimConfig.TargetPart)
+        if not targetPart then continue end
+
+        local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
+        if not onScreen then continue end
+
+        local distToCenter = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+        if distToCenter > SilentAimConfig.FOV then continue end
+
+        local worldDist = (targetPart.Position - myPos).Magnitude
+        if worldDist > SilentAimConfig.Distance then continue end
+
+        if SilentAimConfig.TeamCheck and plr.Team == player.Team and player.Team ~= nil then continue end
+        if SilentAimConfig.VisCheck and not IsVisible(targetPart) then continue end
+
+        local score
+        if SilentAimConfig.Priority == "FOV距离" then
+            score = distToCenter
+        elseif SilentAimConfig.Priority == "世界距离" then
+            score = worldDist
+        elseif SilentAimConfig.Priority == "综合评分" then
+            score = distToCenter * 0.7 + worldDist * 0.3
+        elseif SilentAimConfig.Priority == "血量优先" then
+            local hum = char:FindFirstChild("Humanoid")
+            local hp = hum and hum.Health or 100
+            score = distToCenter * 0.5 + hp * 0.5
+        else
+            score = distToCenter
+        end
+
+        if score < bestScore then
+            bestScore = score
+            bestTarget = targetPart
+        end
+    end
+
+    return bestTarget
+end
+
 local oldHook
 local success, err = pcall(function()
     oldHook = hookmetamethod(game, "__namecall", function(self, ...)
         local method = getnamecallmethod()
         local args = {...}
 
+        -- 静默自瞄：不动视野，修改射线方向命中目标
+        if SilentAimConfig.Enabled and (method == "Raycast" or method == "FindPartOnRay") and not checkcaller() and self == Workspace then
+            local origin, direction
+            if method == "Raycast" then
+                origin = args[1]
+                direction = args[2]
+            else
+                local ray = args[1]
+                if typeof(ray) == "Ray" then
+                    origin = ray.Origin
+                    direction = ray.Direction
+                end
+            end
+
+            if origin and direction then
+                local silentTarget = getSilentAimTarget()
+                if silentTarget then
+                    local targetPos = silentTarget.Position
+                    local newDirection = (targetPos - origin).Unit * direction.Magnitude
+
+                    if method == "Raycast" then
+                        args[2] = newDirection
+                        return oldHook(self, unpack(args))
+                    else
+                        local newRay = Ray.new(origin, newDirection)
+                        args[1] = newRay
+                        return oldHook(self, unpack(args))
+                    end
+                end
+            end
+        end
+
+        -- 子弹追踪
         if BulletConfig.Enabled and (method == "Raycast" or method == "FindPartOnRay") and not checkcaller() and self == Workspace then
             local origin, direction
             if method == "Raycast" then
@@ -1559,7 +1658,6 @@ local success, err = pcall(function()
                 local closestHead = getClosestHead()
                 if closestHead then
                     local targetPos = closestHead.Position
-                    -- 应用预判到子弹命中位置
                     if BulletConfig.Prediction then
                         local char = closestHead.Parent
                         local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -1591,9 +1689,15 @@ BulletTargetText.Center = false
 BulletTargetText.Font = Drawing.Fonts.UI
 
 RunService.RenderStepped:Connect(function()
+    local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
     BulletFOV_Circle.Visible = BulletConfig.Enabled
     BulletFOV_Circle.Radius = BulletConfig.FOV
-    BulletFOV_Circle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    BulletFOV_Circle.Position = screenCenter
+
+    SilentFOV_Circle.Visible = SilentAimConfig.Enabled
+    SilentFOV_Circle.Radius = SilentAimConfig.FOV
+    SilentFOV_Circle.Position = screenCenter
 
     -- 显示当前追踪目标名字
     if BulletConfig.Enabled then
@@ -1723,137 +1827,119 @@ createDropdown(pages[3].Container, "瞄准部位", C_BLUE, {"Head", "HumanoidRoo
     AimConfig.TargetPart = v
 end).LayoutOrder = 9
 
-pages[4] = createFeaturePage("子追", "子弹追踪", "子弹追踪功能设置", C_PINK)
+pages[4] = createFeaturePage("静默", "静默自瞄", "不动视野的自动瞄准", C_PINK)
 
-createToggle(pages[4].Container, "启用子弹追踪", C_PINK, function(v)
+createToggle(pages[4].Container, "启用静默自瞄", C_PINK, function(v)
+    SilentAimConfig.Enabled = v
+    SilentFOV_Circle.Visible = v
+end).LayoutOrder = 1
+
+createToggle(pages[4].Container, "漏打检测", C_PINK, function(v)
+    SilentAimConfig.VisCheck = v
+end).LayoutOrder = 2
+
+createToggle(pages[4].Container, "队伍检测", C_PINK, function(v)
+    SilentAimConfig.TeamCheck = v
+end).LayoutOrder = 3
+
+createSlider(pages[4].Container, "静默范围", C_PINK, 50, 400, 150, function(v)
+    SilentAimConfig.FOV = v
+end).LayoutOrder = 4
+
+createSlider(pages[4].Container, "静默距离", C_PINK, 100, 2000, 500, function(v)
+    SilentAimConfig.Distance = v
+end).LayoutOrder = 5
+
+createDropdown(pages[6].Container, "优先条件", C_PINK, {"FOV距离", "世界距离", "综合评分", "血量优先"}, 1, function(v)
+    SilentAimConfig.Priority = v
+end).LayoutOrder = 6
+
+createDropdown(pages[4].Container, "瞄准部位", C_PINK, {"Head", "HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso"}, 1, function(v)
+    SilentAimConfig.TargetPart = v
+end).LayoutOrder = 7
+
+pages[5] = createFeaturePage("子追", "子弹追踪", "子弹追踪功能设置", C_PINK)
+
+createToggle(pages[5].Container, "启用子弹追踪", C_PINK, function(v)
     BulletConfig.Enabled = v
 end).LayoutOrder = 1
 
-createSlider(pages[4].Container, "追踪角度范围", C_PINK, 10, 180, 60, function(v)
+createSlider(pages[5].Container, "追踪角度范围", C_PINK, 10, 180, 60, function(v)
     BulletConfig.FOV = v
 end).LayoutOrder = 2
 
-createDropdown(pages[4].Container, "优先条件", C_PINK, {"FOV优先", "距离优先", "综合评分"}, 1, function(v)
+createDropdown(pages[5].Container, "优先条件", C_PINK, {"FOV优先", "距离优先", "综合评分"}, 1, function(v)
     BulletConfig.Priority = v
 end).LayoutOrder = 3
 
-createToggle(pages[4].Container, "启用预判", C_PINK, function(v)
+createToggle(pages[5].Container, "启用预判", C_PINK, function(v)
     BulletConfig.Prediction = v
 end).LayoutOrder = 4
 
-createSlider(pages[4].Container, "预判系数", C_PINK, 5, 50, 15, function(v)
+createSlider(pages[5].Container, "预判系数", C_PINK, 5, 50, 15, function(v)
     BulletConfig.PredictionFactor = v / 100
 end).LayoutOrder = 5
 
-pages[5] = createFeaturePage("功能", "功能", "通用功能设置", C_BLUE)
+pages[6] = createFeaturePage("功能", "功能", "通用功能设置", C_BLUE)
 
-createToggle(pages[5].Container, "自动开枪", C_BLUE, function(v)
+createToggle(pages[6].Container, "自动开枪", C_BLUE, function(v)
     MiscConfig.AutoFire = v
 end).LayoutOrder = 1
 
-createSlider(pages[5].Container, "自动开枪范围", C_BLUE, 50, 500, 200, function(v)
+createSlider(pages[6].Container, "自动开枪范围", C_BLUE, 50, 500, 200, function(v)
     MiscConfig.AutoFireRange = v
 end).LayoutOrder = 2
 
-createSlider(pages[5].Container, "开枪间隔(秒)", C_BLUE, 1, 20, 10, function(v)
+createSlider(pages[6].Container, "开枪间隔(秒)", C_BLUE, 1, 20, 10, function(v)
     MiscConfig.AutoFireDelay = v / 100
 end).LayoutOrder = 3
 
-createToggle(pages[5].Container, "修改射速", C_BLUE, function(v)
+createToggle(pages[6].Container, "修改射速", C_BLUE, function(v)
     MiscConfig.FireRate = v
 end).LayoutOrder = 4
 
-createSlider(pages[5].Container, "射速间隔(秒)", C_BLUE, 1, 20, 5, function(v)
+createSlider(pages[6].Container, "射速间隔(秒)", C_BLUE, 1, 20, 5, function(v)
     MiscConfig.FireRateValue = v / 100
 end).LayoutOrder = 5
 
-createToggle(pages[5].Container, "敌人传送面前", C_BLUE, function(v)
+createToggle(pages[6].Container, "敌人传送面前", C_BLUE, function(v)
     MiscConfig.TeleportEnemies = v
 end).LayoutOrder = 6
 
-createSlider(pages[5].Container, "传送距离", C_BLUE, 15, 80, 35, function(v)
+createSlider(pages[6].Container, "传送距离", C_BLUE, 1, 30, 5, function(v)
     MiscConfig.TeleportDistance = v
 end).LayoutOrder = 7
 
-createToggle(pages[5].Container, "无后座力", C_BLUE, function(v)
-    MiscConfig.NoRecoil = v
+createToggle(pages[6].Container, "杀戮光环", C_BLUE, function(v)
+    MiscConfig.KillAura = v
 end).LayoutOrder = 8
 
-createToggle(pages[5].Container, "无扩散", C_BLUE, function(v)
-    MiscConfig.NoSpread = v
-end).LayoutOrder = 9
-
-createToggle(pages[5].Container, "快速换弹", C_BLUE, function(v)
-    MiscConfig.FastReload = v
-end).LayoutOrder = 10
-
-createToggle(pages[5].Container, "杀戮光环", C_BLUE, function(v)
-    MiscConfig.KillAura = v
-end).LayoutOrder = 11
-
-createSlider(pages[5].Container, "光环范围", C_BLUE, 1, 100, 50, function(v)
+createSlider(pages[6].Container, "光环范围", C_BLUE, 1, 100, 50, function(v)
     MiscConfig.KillAuraRange = v
 end).LayoutOrder = 12
 
-createDropdown(pages[5].Container, "优先条件", C_BLUE, {"距离优先", "血量优先", "视角优先"}, 1, function(v)
+createDropdown(pages[6].Container, "优先条件", C_BLUE, {"距离优先", "血量优先", "视角优先"}, 1, function(v)
     MiscConfig.KillAuraPriority = v
 end).LayoutOrder = 13
 
 
--- ========== 本地传送（仅自己可见） ==========
--- 【原理】在自己的客户端上，每帧强制将其他玩家模型渲染到面前。
--- 服务端位置不变，敌人自己视角不变，只有你能看到敌人在面前。
--- 配合自瞄/子弹追踪可直接命中面前的敌人。
-
-local teleportOffsets = {}
-
-RunService.RenderStepped:Connect(function()
-    if not MiscConfig.TeleportEnemies then
-        teleportOffsets = {}
-        return
-    end
-
-    local myChar = player.Character
-    if not myChar then return end
-
-    local myHrp = myChar:FindFirstChild("HumanoidRootPart")
-    if not myHrp then return end
-
-    local camera = Workspace.CurrentCamera
-    local forward = camera.CFrame.LookVector
-    local right = camera.CFrame.RightVector
-    local basePos = myHrp.Position + forward * MiscConfig.TeleportDistance + Vector3.new(0, 2, 0)
-
-    local idx = 0
+RunService.Heartbeat:Connect(function()
+    if not MiscConfig.TeleportEnemies then return end
+    local char = player.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
     for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= player and plr.Character then
-            local char = plr.Character
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            local humanoid = char:FindFirstChildOfClass("Humanoid")
-
-            if hrp and humanoid and humanoid.Health > 0 then
-                idx = idx + 1
-
-                -- 计算面前位置（扇形分布，避免重叠）
-                local angle = (idx - 1) * 0.3
-                local spread = right * math.sin(angle) * 5 + forward * math.cos(angle) * 0
-                local targetPos = basePos + spread
-
-                -- 记录偏移量（用于恢复）
-                if not teleportOffsets[plr] then
-                    teleportOffsets[plr] = hrp.CFrame
+        if plr ~= player then
+            pcall(function()
+                local targetChar = plr.Character
+                if targetChar then
+                    local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+                    if targetRoot then
+                        targetRoot.CFrame = root.CFrame * CFrame.new(0, 0, -MiscConfig.TeleportDistance)
+                    end
                 end
-
-                -- 强制设置到面前（仅本地渲染）
-                hrp.CFrame = CFrame.new(targetPos, targetPos + forward)
-                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-
-                -- 同时设置整个模型的 PrimaryPart
-                if char.PrimaryPart and char.PrimaryPart ~= hrp then
-                    char.PrimaryPart.CFrame = hrp.CFrame
-                end
-            end
+            end)
         end
     end
 end)
@@ -2049,70 +2135,73 @@ local teleportCooldown = 0.5
 -- 尝试通过远程事件发送移动数据（部分游戏有效）
 
 
--- ========== 暴力功能 ==========
-
--- 无后座力 + 无扩散 + 快速换弹 + 射速（通过修改枪械配置）
-local function applyGunMods(tool)
+-- ========== 射速修改 ==========
+local function setupFireRate(tool)
     if not tool:IsA("Tool") then return end
+    if not MiscConfig.FireRate then return end
 
     local config = tool:FindFirstChild("Configuration")
-    if not config then return end
-
-    -- 无后座力
-    if MiscConfig.NoRecoil then
-        local recoil = config:FindFirstChild("Recoil") or config:FindFirstChild("RecoilMultiplier") or config:FindFirstChild("RecoilControl")
-        if recoil then recoil.Value = 0 end
-        local recoilX = config:FindFirstChild("RecoilX") or config:FindFirstChild("HorizontalRecoil")
-        if recoilX then recoilX.Value = 0 end
-        local recoilY = config:FindFirstChild("RecoilY") or config:FindFirstChild("VerticalRecoil")
-        if recoilY then recoilY.Value = 0 end
-        local recoilZ = config:FindFirstChild("RecoilZ")
-        if recoilZ then recoilZ.Value = 0 end
-    end
-
-    -- 无扩散
-    if MiscConfig.NoSpread then
-        local spread = config:FindFirstChild("Spread") or config:FindFirstChild("Accuracy") or config:FindFirstChild("BulletSpread")
-        if spread then spread.Value = 0 end
-        local hipSpread = config:FindFirstChild("HipSpread") or config:FindFirstChild("HipFireSpread")
-        if hipSpread then hipSpread.Value = 0 end
-        local adsSpread = config:FindFirstChild("ADSSpread") or config:FindFirstChild("AimSpread")
-        if adsSpread then adsSpread.Value = 0 end
-    end
-
-    -- 快速换弹
-    if MiscConfig.FastReload then
-        local reload = config:FindFirstChild("ReloadTime") or config:FindFirstChild("Reload") or config:FindFirstChild("ReloadSpeed")
-        if reload then reload.Value = 0.01 end
-    end
-
-    -- 射速修改
-    if MiscConfig.FireRate then
+    if config then
         local fireRate = config:FindFirstChild("FireRate") or config:FindFirstChild("FireCooldown") or config:FindFirstChild("Cooldown")
-        if fireRate then fireRate.Value = MiscConfig.FireRateValue end
+        if fireRate then
+            fireRate.Value = MiscConfig.FireRateValue
+        end
     end
 end
 
--- 持续应用枪械修改
-RunService.Heartbeat:Connect(function()
-    local char = player.Character
-    if not char then return end
-
-    for _, tool in ipairs(char:GetChildren()) do
-        if tool:IsA("Tool") then
-            applyGunMods(tool)
+-- 监听当前装备的工具
+player.CharacterAdded:Connect(function(char)
+    char.ChildAdded:Connect(function(child)
+        if child:IsA("Tool") then
+            setupFireRate(child)
         end
-    end
+    end)
 
     local backpack = player:FindFirstChild("Backpack")
     if backpack then
         for _, tool in ipairs(backpack:GetChildren()) do
             if tool:IsA("Tool") then
-                applyGunMods(tool)
+                setupFireRate(tool)
+            end
+        end
+        backpack.ChildAdded:Connect(function(child)
+            if child:IsA("Tool") then
+                setupFireRate(child)
+            end
+        end)
+    end
+
+    if MiscConfig.FireRate then
+        local conn
+        conn = RunService.Heartbeat:Connect(function()
+            if not char.Parent then
+                conn:Disconnect()
+                return
+            end
+            for _, tool in ipairs(char:GetChildren()) do
+                if tool:IsA("Tool") then
+                    setupFireRate(tool)
+                end
+            end
+        end)
+    end
+end)
+
+if player.Character then
+    for _, child in ipairs(player.Character:GetChildren()) do
+        if child:IsA("Tool") then
+            setupFireRate(child)
+        end
+    end
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        for _, tool in ipairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                setupFireRate(tool)
             end
         end
     end
-end)
+end
 
 -- ========== 杀戮光环 ==========
 -- 全方位自动旋转视角 + 自动开火
