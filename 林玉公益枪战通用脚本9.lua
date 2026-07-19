@@ -27,6 +27,7 @@ local ESP2_Settings = {
     ShowChams = true,
     ShowDistance = true,
     TeamCheck = false,
+    VisCheck = false,
     MaxDistance = 5000,
     BoxColor = Color3.fromRGB(255, 255, 255),
     NameColor = Color3.fromRGB(255, 255, 255),
@@ -892,23 +893,39 @@ local function openPanel()
     isOpen = true
     orb.Visible = false
     panel.Visible = true
-    panel.Size = UDim2.new(0, 0, 0, 0)
-    panel.Position = UDim2.new(1, -68, 1, -68)
 
-    TweenService:Create(panel, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    -- 从屏幕中心缩放展开
+    panel.AnchorPoint = Vector2.new(0.5, 0.5)
+    panel.Size = UDim2.new(0, 0, 0, 0)
+    panel.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+    TweenService:Create(panel, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Size = UDim2.new(PANEL_W, 0, PANEL_H, 0),
-        Position = UDim2.new(PANEL_X, 0, PANEL_Y, 0),
+        Position = UDim2.new(PANEL_X + PANEL_W/2, 0, PANEL_Y + PANEL_H/2, 0),
     }):Play()
+
+    task.delay(0.5, function()
+        if panel.Visible then
+            panel.AnchorPoint = Vector2.new(0, 0)
+            panel.Position = UDim2.new(PANEL_X, 0, PANEL_Y, 0)
+        end
+    end)
 end
 
 local function closePanel()
     isOpen = false
-    TweenService:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+
+    panel.AnchorPoint = Vector2.new(0.5, 0.5)
+    panel.Position = UDim2.new(PANEL_X + PANEL_W/2, 0, PANEL_Y + PANEL_H/2, 0)
+
+    TweenService:Create(panel, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
         Size = UDim2.new(0, 0, 0, 0),
-        Position = UDim2.new(1, -68, 1, -68),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
     }):Play()
-    task.wait(0.3)
+
+    task.wait(0.35)
     panel.Visible = false
+    panel.AnchorPoint = Vector2.new(0, 0)
     orb.Visible = true
 end
 
@@ -1006,7 +1023,10 @@ player.CharacterAdded:Connect(function()
 end)
 
 local function IsVisible(targetPart)
-    local origin = Camera.CFrame.Position
+    if not targetPart then return false end
+    local cam = workspace.CurrentCamera
+    if not cam then return false end
+    local origin = cam.CFrame.Position
     local direction = targetPart.Position - origin
     local raycastParams = RaycastParams.new()
     raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
@@ -1049,6 +1069,8 @@ local function CreateESP2ScreenGui()
         Parent = game:GetService("CoreGui"),
         Name = "ESP2Holder",
         Enabled = true,
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Global,
     })
 end
 
@@ -1090,105 +1112,133 @@ local function UpdateESP2()
     local maxDist = ESP2_Settings.MaxDistance
 
     for plr, elements in pairs(ESP2.PlayerElements) do
-        local shouldHide = true
-        if plr and plr.Character then
-            local char = plr.Character
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            local hum = char:FindFirstChild("Humanoid")
-            if hrp and hum and hum.Health > 0 then
-                local sameTeam = (ESP2_Settings.TeamCheck and lp.Team == plr.Team and lp.Team ~= nil)
-                if not sameTeam then
-                    local pos, onScreen = camera:WorldToScreenPoint(hrp.Position)
-                    local dist = (camera.CFrame.Position - hrp.Position).Magnitude
-                    if onScreen and dist <= maxDist then
-                        shouldHide = false
-                        local size = hrp.Size.Y
-                        local scaleFactor = (size * camera.ViewportSize.Y) / (pos.Z * 2)
-                        local w = 3 * scaleFactor
-                        local h = 4.5 * scaleFactor
+        local success, err = pcall(function()
+            local shouldHide = true
+            if plr and plr.Character then
+                local char = plr.Character
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                local head = char:FindFirstChild("Head")
 
-                        ESP2_FadeOutOnDist(elements.Box, dist, maxDist)
-                        ESP2_FadeOutOnDist(elements.Outline, dist, maxDist)
-                        ESP2_FadeOutOnDist(elements.Name, dist, maxDist)
-                        ESP2_FadeOutOnDist(elements.Healthbar, dist, maxDist)
-                        ESP2_FadeOutOnDist(elements.BehindHealthbar, dist, maxDist)
-                        ESP2_FadeOutOnDist(elements.HealthText, dist, maxDist)
-                        ESP2_FadeOutOnDist(elements.Chams, dist, maxDist)
+                if hrp and hum and hum.Health > 0 then
+                    local sameTeam = (ESP2_Settings.TeamCheck and lp.Team == plr.Team and lp.Team ~= nil)
+                    if not sameTeam then
+                        local pos, onScreen = camera:WorldToScreenPoint(hrp.Position)
+                        local dist = (camera.CFrame.Position - hrp.Position).Magnitude
 
-                        if ESP2_Settings.ShowBox then
-                            elements.Box.Position = UDim2.new(0, pos.X - w/2, 0, pos.Y - h/2)
-                            elements.Box.Size = UDim2.new(0, w, 0, h)
-                            elements.Box.Visible = true
-                            elements.Box.BackgroundTransparency = 0.75
-                            elements.Box.BorderSizePixel = 1
-                            elements.Box.BackgroundColor3 = ESP2_Settings.BoxColor
-                            elements.Outline.Enabled = true
-                            elements.Outline.Transparency = 0
-                        else
-                            elements.Box.Visible = false
-                            elements.Outline.Enabled = false
-                        end
+                        if onScreen and dist <= maxDist then
+                            shouldHide = false
 
-                        if ESP2_Settings.ShowChams then
-                            elements.Chams.Adornee = char
-                            elements.Chams.Enabled = true
-                            elements.Chams.FillColor = ESP2_Settings.ChamsFillColor
-                            elements.Chams.FillTransparency = 0.8
-                            elements.Chams.OutlineColor = ESP2_Settings.ChamsOutlineColor
-                            elements.Chams.OutlineTransparency = 0.5
-                            elements.Chams.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                        else
-                            elements.Chams.Enabled = false
-                        end
-
-                        if ESP2_Settings.ShowName then
-                            local distText = ""
-                            if ESP2_Settings.ShowDistance then
-                                distText = string.format(" [%dm]", math.floor(dist))
+                            -- 漏打检测
+                            local isVisible = true
+                            if ESP2_Settings.VisCheck then
+                                local checkPart = head or hrp
+                                isVisible = IsVisible(checkPart)
                             end
-                            elements.Name.Text = plr.Name .. distText
-                            elements.Name.Position = UDim2.new(0, pos.X, 0, pos.Y - h/2 - 9)
-                            elements.Name.TextColor3 = ESP2_Settings.NameColor
-                            elements.Name.Visible = true
-                        else
-                            elements.Name.Visible = false
-                        end
 
-                        if ESP2_Settings.ShowHealth then
-                            local health = hum.Health / hum.MaxHealth
-                            health = math.clamp(health, 0, 1)
-                            elements.Healthbar.Position = UDim2.new(0, pos.X - w/2 - 6, 0, pos.Y - h/2 + h * (1 - health))
-                            elements.Healthbar.Size = UDim2.new(0, 2.5, 0, h * health)
-                            elements.Healthbar.BackgroundColor3 = ESP2_Settings.HealthBarColor
-                            elements.Healthbar.Visible = true
-                            elements.BehindHealthbar.Position = UDim2.new(0, pos.X - w/2 - 6, 0, pos.Y - h/2)
-                            elements.BehindHealthbar.Size = UDim2.new(0, 2.5, 0, h)
-                            elements.BehindHealthbar.Visible = true
-                            local healthPercent = math.floor(hum.Health / hum.MaxHealth * 100)
-                            elements.HealthText.Position = UDim2.new(0, pos.X - w/2 - 6, 0, pos.Y - h/2 + h * (1 - healthPercent/100) + 3)
-                            elements.HealthText.Text = tostring(healthPercent)
-                            elements.HealthText.Visible = (hum.Health < hum.MaxHealth)
-                        else
-                            elements.Healthbar.Visible = false
-                            elements.BehindHealthbar.Visible = false
-                            elements.HealthText.Visible = false
-                        end
+                            local displayBoxColor = isVisible and ESP2_Settings.BoxColor or Color3.fromRGB(0, 120, 255)
+                            local displayNameColor = isVisible and ESP2_Settings.NameColor or Color3.fromRGB(0, 120, 255)
 
-                        elements.Distance.Visible = false
+                            local size = hrp.Size.Y
+                            local scaleFactor = (size * camera.ViewportSize.Y) / (pos.Z * 2)
+                            local w = 3 * scaleFactor
+                            local h = 4.5 * scaleFactor
+
+                            -- 距离渐变透明度
+                            local fadeTrans = math.clamp(dist / maxDist, 0, 0.85)
+
+                            if ESP2_Settings.ShowBox then
+                                elements.Box.Position = UDim2.new(0, pos.X - w/2, 0, pos.Y - h/2)
+                                elements.Box.Size = UDim2.new(0, w, 0, h)
+                                elements.Box.Visible = true
+                                elements.Box.BackgroundTransparency = 0.75 + fadeTrans * 0.15
+                                elements.Box.BorderSizePixel = 1
+                                elements.Box.BackgroundColor3 = displayBoxColor
+                                elements.Outline.Enabled = true
+                                elements.Outline.Transparency = fadeTrans
+                                elements.Outline.Color = displayBoxColor
+                            else
+                                elements.Box.Visible = false
+                                elements.Outline.Enabled = false
+                            end
+
+                            if ESP2_Settings.ShowChams then
+                                elements.Chams.Adornee = char
+                                elements.Chams.Enabled = true
+                                elements.Chams.FillColor = ESP2_Settings.ChamsFillColor
+                                elements.Chams.FillTransparency = 0.8
+                                elements.Chams.OutlineColor = ESP2_Settings.ChamsOutlineColor
+                                elements.Chams.OutlineTransparency = 0.5
+                                elements.Chams.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                            else
+                                elements.Chams.Enabled = false
+                            end
+
+                            if ESP2_Settings.ShowName then
+                                local distText = ""
+                                if ESP2_Settings.ShowDistance then
+                                    distText = string.format(" [%dm]", math.floor(dist))
+                                end
+                                elements.Name.Text = plr.Name .. distText
+                                elements.Name.Position = UDim2.new(0, pos.X, 0, pos.Y - h/2 - 9)
+                                elements.Name.TextColor3 = displayNameColor
+                                elements.Name.TextTransparency = fadeTrans
+                                elements.Name.TextStrokeTransparency = fadeTrans
+                                elements.Name.Visible = true
+                            else
+                                elements.Name.Visible = false
+                            end
+
+                            if ESP2_Settings.ShowHealth then
+                                local healthRatio = hum.Health / hum.MaxHealth
+                                healthRatio = math.clamp(healthRatio, 0, 1)
+                                elements.Healthbar.Position = UDim2.new(0, pos.X - w/2 - 6, 0, pos.Y - h/2 + h * (1 - healthRatio))
+                                elements.Healthbar.Size = UDim2.new(0, 2.5, 0, h * healthRatio)
+                                elements.Healthbar.BackgroundColor3 = ESP2_Settings.HealthBarColor
+                                elements.Healthbar.BackgroundTransparency = fadeTrans
+                                elements.Healthbar.Visible = true
+
+                                elements.BehindHealthbar.Position = UDim2.new(0, pos.X - w/2 - 6, 0, pos.Y - h/2)
+                                elements.BehindHealthbar.Size = UDim2.new(0, 2.5, 0, h)
+                                elements.BehindHealthbar.BackgroundTransparency = fadeTrans
+                                elements.BehindHealthbar.Visible = true
+
+                                local healthPercent = math.floor(healthRatio * 100)
+                                elements.HealthText.Position = UDim2.new(0, pos.X - w/2 - 6, 0, pos.Y - h/2 + h * (1 - healthPercent/100) + 3)
+                                elements.HealthText.Text = tostring(healthPercent) .. "%"
+                                elements.HealthText.TextTransparency = fadeTrans
+                                elements.HealthText.TextStrokeTransparency = fadeTrans
+                                elements.HealthText.Visible = (hum.Health < hum.MaxHealth)
+                            else
+                                elements.Healthbar.Visible = false
+                                elements.BehindHealthbar.Visible = false
+                                elements.HealthText.Visible = false
+                            end
+
+                            elements.Distance.Visible = false
+                        end
                     end
                 end
             end
-        end
-        if shouldHide then
-            for _, v in pairs(elements) do
-                if v and v:IsA("GuiObject") then v.Visible = false end
+
+            if shouldHide then
+                for _, v in pairs(elements) do
+                    if v and v:IsA("GuiObject") then v.Visible = false end
+                end
+                if elements.Chams then elements.Chams.Enabled = false end
             end
-            if elements.Chams then elements.Chams.Enabled = false end
+        end)
+
+        if not success then
+            -- 静默处理错误，防止RenderStepped断开
         end
     end
 
+    -- 清理已离开的玩家
     for plr, _ in pairs(ESP2.PlayerElements) do
-        if not game.Players:FindFirstChild(plr.Name) then DestroyESP2ForPlayer(plr) end
+        if not game.Players:FindFirstChild(plr.Name) then
+            DestroyESP2ForPlayer(plr)
+        end
     end
 end
 
@@ -1374,12 +1424,28 @@ local function InitESP2Events()
     game.Players.PlayerAdded:Connect(function(plr)
         if plr == player then return end
         CreateESP2ForPlayer(plr)
+        plr.CharacterAdded:Connect(function()
+            task.wait(0.1)
+            if not ESP2.PlayerElements[plr] then
+                CreateESP2ForPlayer(plr)
+            end
+        end)
     end)
+
     game.Players.PlayerRemoving:Connect(function(plr)
         DestroyESP2ForPlayer(plr)
     end)
+
     for _, plr in ipairs(game.Players:GetPlayers()) do
-        if plr ~= player then CreateESP2ForPlayer(plr) end
+        if plr ~= player then
+            CreateESP2ForPlayer(plr)
+            plr.CharacterAdded:Connect(function()
+                task.wait(0.1)
+                if not ESP2.PlayerElements[plr] then
+                    CreateESP2ForPlayer(plr)
+                end
+            end)
+        end
     end
 end
 
@@ -1623,45 +1689,49 @@ createToggle(pages[2].Container, "上色透视", C_PINK, function(v)
     ESP2_Settings.ShowChams = v
 end).LayoutOrder = 6
 
+createToggle(pages[2].Container, "漏打检测", C_PINK, function(v)
+    ESP2_Settings.VisCheck = v
+end).LayoutOrder = 7
+
 createToggle(pages[2].Container, "队伍检测", C_PINK, function(v)
     ESP2_Settings.TeamCheck = v
-end).LayoutOrder = 7
+end).LayoutOrder = 8
 
 createSlider(pages[2].Container, "最大绘制距离", C_PINK, 50, 5000, 5000, function(v)
     ESP2_Settings.MaxDistance = v
-end).LayoutOrder = 8
+end).LayoutOrder = 9
 
 createToggle(pages[2].Container, "显示雷达", C_PINK, function(v)
     ESP2_Settings.ShowRadar = v
-end).LayoutOrder = 9
+end).LayoutOrder = 10
 
 createDropdown(pages[2].Container, "雷达形状", C_PINK, {"圆形", "方形"}, 1, function(v)
     ESP2_Settings.RadarShape = v
-end).LayoutOrder = 10
+end).LayoutOrder = 11
 
 createSlider(pages[2].Container, "雷达大小", C_PINK, 60, 200, 120, function(v)
     ESP2_Settings.RadarSize = v
-end).LayoutOrder = 11
+end).LayoutOrder = 12
 
 createSlider(pages[2].Container, "雷达范围", C_PINK, 50, 500, 200, function(v)
     ESP2_Settings.RadarRange = v
-end).LayoutOrder = 12
+end).LayoutOrder = 13
 
 createSlider(pages[2].Container, "雷达X位置", C_PINK, 50, 800, 150, function(v)
     ESP2_Settings.RadarPosX = v
-end).LayoutOrder = 13
+end).LayoutOrder = 14
 
 createSlider(pages[2].Container, "雷达Y位置", C_PINK, 50, 600, 150, function(v)
     ESP2_Settings.RadarPosY = v
-end).LayoutOrder = 14
+end).LayoutOrder = 15
 
 createDropdown(pages[2].Container, "可见颜色", C_PINK, {"绿色", "红色", "蓝色", "黄色", "青色", "紫色", "橙色", "白色", "粉色"}, 1, function(v)
     ESP2_Settings.RadarVisibleColor = v
-end).LayoutOrder = 15
+end).LayoutOrder = 16
 
 createDropdown(pages[2].Container, "不可见颜色", C_PINK, {"红色", "绿色", "蓝色", "黄色", "青色", "紫色", "橙色", "白色", "粉色"}, 1, function(v)
     ESP2_Settings.RadarHiddenColor = v
-end).LayoutOrder = 16
+end).LayoutOrder = 17
 
 pages[3] = createFeaturePage("自瞄", "自瞄", "自瞄功能详细设置", C_BLUE)
 
@@ -1901,140 +1971,6 @@ player.CharacterAdded:Connect(function(char)
 end)
 
 -- 如果角色已存在，立即设置
-if player.Character then
-    for _, child in ipairs(player.Character:GetChildren()) do
-        if child:IsA("Tool") then
-            setupFireRate(child)
-        end
-    end
-    local backpack = player:FindFirstChild("Backpack")
-    if backpack then
-        for _, tool in ipairs(backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                setupFireRate(tool)
-            end
-        end
-    end
-end
-
--- ========== 自动开枪 ==========
-local VirtualUser = game:GetService("VirtualUser")
-local autoFireRunning = false
-
-local function autoFireLoop()
-    if autoFireRunning then return end
-    autoFireRunning = true
-
-    while MiscConfig.AutoFire do
-        local shouldFire = false
-        local cameraPos = Camera.CFrame.Position
-        local cameraDir = Camera.CFrame.LookVector
-        local range = MiscConfig.AutoFireRange
-
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player and plr.Character then
-                local char = plr.Character
-                local head = char:FindFirstChild("Head")
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
-
-                if head and humanoid and humanoid.Health > 0 then
-                    if not IsVisible(head) then continue end
-
-                    local toTarget = head.Position - cameraPos
-                    local dist = toTarget.Magnitude
-                    if dist <= range then
-                        local dir = toTarget.Unit
-                        local angle = math.deg(math.acos(math.clamp(cameraDir:Dot(dir), -1, 1)))
-                        if angle <= 15 then
-                            shouldFire = true
-                            break
-                        end
-                    end
-                end
-            end
-        end
-
-        if shouldFire then
-            VirtualUser:Button1Down(Vector2.new(0, 0))
-            VirtualUser:Button1Up(Vector2.new(0, 0))
-        end
-
-        task.wait(MiscConfig.AutoFireDelay)
-    end
-
-    autoFireRunning = false
-end
-
-RunService.Heartbeat:Connect(function()
-    if MiscConfig.AutoFire and not autoFireRunning then
-        task.spawn(autoFireLoop)
-    end
-end)
-
--- ========== 敌人传送面前 ==========
--- 【说明】传送其他玩家/敌人需要服务端权限。
--- Roblox 引擎中其他玩家的位置由服务端权威控制，
--- 客户端修改后会被服务端立即覆盖。已尝试 CFrame、
--- PivotTo、MoveTo、持续强制保持、AlignPosition 约束等多种方法，
--- 均受服务端限制无法生效。
-local lastTeleport = 0
-local teleportCooldown = 0.5
-
--- 尝试通过远程事件发送移动数据（部分游戏有效）
-
-
--- ========== 射速修改 ==========
-local function setupFireRate(tool)
-    if not tool:IsA("Tool") then return end
-    if not MiscConfig.FireRate then return end
-
-    local config = tool:FindFirstChild("Configuration")
-    if config then
-        local fireRate = config:FindFirstChild("FireRate") or config:FindFirstChild("FireCooldown") or config:FindFirstChild("Cooldown")
-        if fireRate then
-            fireRate.Value = MiscConfig.FireRateValue
-        end
-    end
-end
-
--- 监听当前装备的工具
-player.CharacterAdded:Connect(function(char)
-    char.ChildAdded:Connect(function(child)
-        if child:IsA("Tool") then
-            setupFireRate(child)
-        end
-    end)
-
-    local backpack = player:FindFirstChild("Backpack")
-    if backpack then
-        for _, tool in ipairs(backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                setupFireRate(tool)
-            end
-        end
-        backpack.ChildAdded:Connect(function(child)
-            if child:IsA("Tool") then
-                setupFireRate(child)
-            end
-        end)
-    end
-
-    if MiscConfig.FireRate then
-        local conn
-        conn = RunService.Heartbeat:Connect(function()
-            if not char.Parent then
-                conn:Disconnect()
-                return
-            end
-            for _, tool in ipairs(char:GetChildren()) do
-                if tool:IsA("Tool") then
-                    setupFireRate(tool)
-                end
-            end
-        end)
-    end
-end)
-
 if player.Character then
     for _, child in ipairs(player.Character:GetChildren()) do
         if child:IsA("Tool") then
