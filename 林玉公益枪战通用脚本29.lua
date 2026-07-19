@@ -12,28 +12,28 @@ local Camera = Workspace.CurrentCamera
 -- ============================================================
 --  浅蓝浅粉拼凑配色 — 清新马卡龙主题
 -- ============================================================
-local C_SKY       = Color3.fromRGB(180, 230, 255)   -- 天空浅蓝
-local C_SKY2      = Color3.fromRGB(140, 210, 245)   -- 中浅蓝
-local C_SKY3      = Color3.fromRGB(100, 190, 235)   -- 深蓝强调
-local C_PINK      = Color3.fromRGB(255, 200, 220)   -- 樱花浅粉
-local C_PINK2     = Color3.fromRGB(255, 170, 200)   -- 中浅粉
-local C_PINK3     = Color3.fromRGB(255, 140, 180)   -- 深粉强调
-local C_BG        = Color3.fromRGB(245, 250, 255)   -- 极浅蓝白背景
-local C_BG_PANEL  = Color3.fromRGB(255, 250, 252)   -- 极浅粉白面板
-local C_CARD      = Color3.fromRGB(255, 255, 255)   -- 纯白卡片
-local C_CARD_SKY  = Color3.fromRGB(235, 248, 255)   -- 浅蓝卡片
-local C_CARD_PINK = Color3.fromRGB(255, 242, 248)   -- 浅粉卡片
-local C_TEXT      = Color3.fromRGB(60, 65, 85)      -- 主文字
-local C_TEXT2     = Color3.fromRGB(130, 135, 155)   -- 次要文字
-local C_TEXT3     = Color3.fromRGB(160, 165, 185)   -- 辅助文字
+local C_SKY       = Color3.fromRGB(180, 230, 255)
+local C_SKY2      = Color3.fromRGB(140, 210, 245)
+local C_SKY3      = Color3.fromRGB(100, 190, 235)
+local C_PINK      = Color3.fromRGB(255, 200, 220)
+local C_PINK2     = Color3.fromRGB(255, 170, 200)
+local C_PINK3     = Color3.fromRGB(255, 140, 180)
+local C_BG        = Color3.fromRGB(245, 250, 255)
+local C_BG_PANEL  = Color3.fromRGB(255, 250, 252)
+local C_CARD      = Color3.fromRGB(255, 255, 255)
+local C_CARD_SKY  = Color3.fromRGB(235, 248, 255)
+local C_CARD_PINK = Color3.fromRGB(255, 242, 248)
+local C_TEXT      = Color3.fromRGB(60, 65, 85)
+local C_TEXT2     = Color3.fromRGB(130, 135, 155)
+local C_TEXT3     = Color3.fromRGB(160, 165, 185)
 local C_WHITE     = Color3.fromRGB(255, 255, 255)
 local C_BLACK     = Color3.fromRGB(0, 0, 0)
-local C_GRAY      = Color3.fromRGB(220, 225, 235)   -- 浅灰轨道
-local C_GRAY2     = Color3.fromRGB(200, 205, 218)   -- 中浅灰
+local C_GRAY      = Color3.fromRGB(220, 225, 235)
+local C_GRAY2     = Color3.fromRGB(200, 205, 218)
 local C_GREEN     = Color3.fromRGB(120, 230, 160)
 local C_RED       = Color3.fromRGB(255, 120, 140)
-local C_INVIS     = Color3.fromRGB(255, 255, 255)   -- ESP初始色（白色）
-local C_VISIBLE   = Color3.fromRGB(0, 150, 255)      -- ESP视野内蓝色
+local C_INVIS     = Color3.fromRGB(255, 255, 255)
+local C_VISIBLE   = Color3.fromRGB(0, 150, 255)
 
 local ESP2_Settings = {
     Enabled = false,
@@ -223,256 +223,256 @@ topGradient.Name = "TopGradient"
 topGradient.Size = UDim2.new(1, 0, 0, 4)
 topGradient.Position = UDim2.new(0, 0, 0, 0)
 topGradient.BorderSizePixel = 0
- topGradient.ZIndex = 51
- topGradient.Parent = panel
+topGradient.ZIndex = 51
+topGradient.Parent = panel
 
- local topGradColor = Instance.new("UIGradient")
- topGradColor.Color = ColorSequence.new({
-     ColorSequenceKeypoint.new(0, C_SKY3),
-     ColorSequenceKeypoint.new(0.5, C_PINK3),
-     ColorSequenceKeypoint.new(1, C_SKY3)
- })
- topGradColor.Rotation = 90
- topGradColor.Parent = topGradient
+local topGradColor = Instance.new("UIGradient")
+topGradColor.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, C_SKY3),
+    ColorSequenceKeypoint.new(0.5, C_PINK3),
+    ColorSequenceKeypoint.new(1, C_SKY3)
+})
+topGradColor.Rotation = 90
+topGradColor.Parent = topGradient
 
- local inner = Instance.new("Frame")
- inner.Name = "Inner"
- inner.Size = UDim2.new(1, 0, 1, 0)
- inner.BackgroundColor3 = C_BG_PANEL
- inner.BackgroundTransparency = 0
- inner.ClipsDescendants = true
- inner.ZIndex = 52
- inner.Parent = panel
+local inner = Instance.new("Frame")
+inner.Name = "Inner"
+inner.Size = UDim2.new(1, 0, 1, 0)
+inner.BackgroundColor3 = C_BG_PANEL
+inner.BackgroundTransparency = 0
+inner.ClipsDescendants = true
+inner.ZIndex = 52
+inner.Parent = panel
 
- local innerCorner = Instance.new("UICorner")
- innerCorner.CornerRadius = UDim.new(0, 24)
- innerCorner.Parent = inner
+local innerCorner = Instance.new("UICorner")
+innerCorner.CornerRadius = UDim.new(0, 24)
+innerCorner.Parent = inner
 
- -- ============================================================
- --  顶部栏 — 浅蓝背景 + 粉装饰
- -- ============================================================
- local TOPBAR_H = 52
- local topBar = Instance.new("Frame")
- topBar.Name = "TopBar"
- topBar.Size = UDim2.new(1, 0, 0, TOPBAR_H)
- topBar.BackgroundColor3 = C_SKY
- topBar.BorderSizePixel = 0
- topBar.ZIndex = 53
+-- ============================================================
+--  顶部栏 — 浅蓝背景 + 粉装饰
+-- ============================================================
+local TOPBAR_H = 52
+local topBar = Instance.new("Frame")
+topBar.Name = "TopBar"
+topBar.Size = UDim2.new(1, 0, 0, TOPBAR_H)
+topBar.BackgroundColor3 = C_SKY
+topBar.BorderSizePixel = 0
+topBar.ZIndex = 53
 
- topBar.ClipsDescendants = true
- local topBarMask = Instance.new("Frame")
- topBarMask.Size = UDim2.new(1, 0, 0.5, 0)
- topBarMask.Position = UDim2.new(0, 0, 0.5, 0)
- topBarMask.BackgroundColor3 = C_SKY
- topBarMask.BorderSizePixel = 0
- topBarMask.ZIndex = 54
- topBarMask.Parent = topBar
+topBar.ClipsDescendants = true
+local topBarMask = Instance.new("Frame")
+topBarMask.Size = UDim2.new(1, 0, 0.5, 0)
+topBarMask.Position = UDim2.new(0, 0, 0.5, 0)
+topBarMask.BackgroundColor3 = C_SKY
+topBarMask.BorderSizePixel = 0
+topBarMask.ZIndex = 54
+topBarMask.Parent = topBar
 
- local topBarCorner = Instance.new("UICorner")
- topBarCorner.CornerRadius = UDim.new(0, 24)
- topBarCorner.Parent = topBar
+local topBarCorner = Instance.new("UICorner")
+topBarCorner.CornerRadius = UDim.new(0, 24)
+topBarCorner.Parent = topBar
 
- -- 右上角粉色装饰圆
- local topDecor = Instance.new("Frame")
- topDecor.Size = UDim2.new(0, 60, 0, 60)
- topDecor.Position = UDim2.new(1, -30, 0, -20)
- topDecor.BackgroundColor3 = C_PINK
- topDecor.BackgroundTransparency = 0.6
- topDecor.BorderSizePixel = 0
- topDecor.ZIndex = 53
- topDecor.Parent = topBar
+-- 右上角粉色装饰圆
+local topDecor = Instance.new("Frame")
+topDecor.Size = UDim2.new(0, 60, 0, 60)
+topDecor.Position = UDim2.new(1, -30, 0, -20)
+topDecor.BackgroundColor3 = C_PINK
+topDecor.BackgroundTransparency = 0.6
+topDecor.BorderSizePixel = 0
+topDecor.ZIndex = 53
+topDecor.Parent = topBar
 
- local topDecorC = Instance.new("UICorner")
- topDecorC.CornerRadius = UDim.new(1, 0)
- topDecorC.Parent = topDecor
+local topDecorC = Instance.new("UICorner")
+topDecorC.CornerRadius = UDim.new(1, 0)
+topDecorC.Parent = topDecor
 
- local topIcon = Instance.new("TextLabel")
- topIcon.Size = UDim2.new(0, 28, 0, 28)
- topIcon.Position = UDim2.new(0, 16, 0, 12)
- topIcon.BackgroundTransparency = 1
- topIcon.Text = "💠"
- topIcon.TextColor3 = C_SKY3
- topIcon.TextSize = 20
- topIcon.Font = Enum.Font.GothamBold
- topIcon.ZIndex = 55
- topIcon.Parent = topBar
+local topIcon = Instance.new("TextLabel")
+topIcon.Size = UDim2.new(0, 28, 0, 28)
+topIcon.Position = UDim2.new(0, 16, 0, 12)
+topIcon.BackgroundTransparency = 1
+topIcon.Text = "💠"
+topIcon.TextColor3 = C_SKY3
+topIcon.TextSize = 20
+topIcon.Font = Enum.Font.GothamBold
+topIcon.ZIndex = 55
+topIcon.Parent = topBar
 
- local topTitle = Instance.new("TextLabel")
- topTitle.Size = UDim2.new(1, -110, 1, 0)
- topTitle.Position = UDim2.new(0, 48, 0, 0)
- topTitle.BackgroundTransparency = 1
- topTitle.Text = "Ly枪战辅助"
- topTitle.TextColor3 = C_TEXT
- topTitle.TextSize = 18
- topTitle.Font = Enum.Font.GothamBold
- topTitle.TextXAlignment = Enum.TextXAlignment.Left
- topTitle.ZIndex = 55
- topTitle.Parent = topBar
+local topTitle = Instance.new("TextLabel")
+topTitle.Size = UDim2.new(1, -110, 1, 0)
+topTitle.Position = UDim2.new(0, 48, 0, 0)
+topTitle.BackgroundTransparency = 1
+topTitle.Text = "Ly枪战辅助"
+topTitle.TextColor3 = C_TEXT
+topTitle.TextSize = 18
+topTitle.Font = Enum.Font.GothamBold
+topTitle.TextXAlignment = Enum.TextXAlignment.Left
+topTitle.ZIndex = 55
+topTitle.Parent = topBar
 
- local topSub = Instance.new("TextLabel")
- topSub.Size = UDim2.new(0, 120, 0, 16)
- topSub.Position = UDim2.new(0, 48, 0, 30)
- topSub.BackgroundTransparency = 1
- topSub.Text = "v30.0 浅蓝浅粉版"
- topSub.TextColor3 = C_TEXT3
- topSub.TextSize = 10
- topSub.Font = Enum.Font.Gotham
- topSub.TextXAlignment = Enum.TextXAlignment.Left
- topSub.ZIndex = 55
- topSub.Parent = topBar
+local topSub = Instance.new("TextLabel")
+topSub.Size = UDim2.new(0, 120, 0, 16)
+topSub.Position = UDim2.new(0, 48, 0, 30)
+topSub.BackgroundTransparency = 1
+topSub.Text = "v31.0 浅蓝浅粉版"
+topSub.TextColor3 = C_TEXT3
+topSub.TextSize = 10
+topSub.Font = Enum.Font.Gotham
+topSub.TextXAlignment = Enum.TextXAlignment.Left
+topSub.ZIndex = 55
+topSub.Parent = topBar
 
- local shrinkBtn = Instance.new("TextButton")
- shrinkBtn.Name = "ShrinkBtn"
- shrinkBtn.Size = UDim2.new(0, 32, 0, 32)
- shrinkBtn.Position = UDim2.new(1, -42, 0, 10)
- shrinkBtn.BackgroundColor3 = C_PINK2
- shrinkBtn.Text = "✕"
- shrinkBtn.TextColor3 = C_WHITE
- shrinkBtn.TextSize = 14
- shrinkBtn.Font = Enum.Font.GothamBold
- shrinkBtn.BorderSizePixel = 0
- shrinkBtn.AutoButtonColor = false
- shrinkBtn.ZIndex = 56
- shrinkBtn.Parent = topBar
+local shrinkBtn = Instance.new("TextButton")
+shrinkBtn.Name = "ShrinkBtn"
+shrinkBtn.Size = UDim2.new(0, 32, 0, 32)
+shrinkBtn.Position = UDim2.new(1, -42, 0, 10)
+shrinkBtn.BackgroundColor3 = C_PINK2
+shrinkBtn.Text = "✕"
+shrinkBtn.TextColor3 = C_WHITE
+shrinkBtn.TextSize = 14
+shrinkBtn.Font = Enum.Font.GothamBold
+shrinkBtn.BorderSizePixel = 0
+shrinkBtn.AutoButtonColor = false
+shrinkBtn.ZIndex = 56
+shrinkBtn.Parent = topBar
 
- local shrinkCorner = Instance.new("UICorner")
- shrinkCorner.CornerRadius = UDim.new(1, 0)
- shrinkCorner.Parent = shrinkBtn
+local shrinkCorner = Instance.new("UICorner")
+shrinkCorner.CornerRadius = UDim.new(1, 0)
+shrinkCorner.Parent = shrinkBtn
 
- shrinkBtn.MouseEnter:Connect(function()
-     TweenService:Create(shrinkBtn, TweenInfo.new(0.2), {BackgroundColor3 = C_PINK3}):Play()
- end)
- shrinkBtn.MouseLeave:Connect(function()
-     TweenService:Create(shrinkBtn, TweenInfo.new(0.2), {BackgroundColor3 = C_PINK2}):Play()
- end)
+shrinkBtn.MouseEnter:Connect(function()
+    TweenService:Create(shrinkBtn, TweenInfo.new(0.2), {BackgroundColor3 = C_PINK3}):Play()
+end)
+shrinkBtn.MouseLeave:Connect(function()
+    TweenService:Create(shrinkBtn, TweenInfo.new(0.2), {BackgroundColor3 = C_PINK2}):Play()
+end)
 
- topBar.Parent = inner
+topBar.Parent = inner
 
- -- ============================================================
- --  主体区域
- -- ============================================================
- local body = Instance.new("Frame")
- body.Name = "Body"
- body.Size = UDim2.new(1, 0, 1, -TOPBAR_H)
- body.Position = UDim2.new(0, 0, 0, TOPBAR_H)
- body.BackgroundTransparency = 1
- body.ClipsDescendants = true
- body.ZIndex = 52
- body.Parent = inner
+-- ============================================================
+--  主体区域
+-- ============================================================
+local body = Instance.new("Frame")
+body.Name = "Body"
+body.Size = UDim2.new(1, 0, 1, -TOPBAR_H)
+body.Position = UDim2.new(0, 0, 0, TOPBAR_H)
+body.BackgroundTransparency = 1
+body.ClipsDescendants = true
+body.ZIndex = 52
+body.Parent = inner
 
- local NAV_RATIO = 0.24
- local GAP = 0.018
- local nav = Instance.new("ScrollingFrame")
- nav.Name = "Nav"
- nav.Size = UDim2.new(NAV_RATIO, 0, 1, -BOTTOM_SAFE)
- nav.BackgroundColor3 = C_BG
- nav.BorderSizePixel = 0
- nav.ScrollBarThickness = 3
- nav.ScrollBarImageColor3 = C_SKY3
- nav.CanvasSize = UDim2.new(0, 0, 0, 0)
- nav.AutomaticCanvasSize = Enum.AutomaticSize.Y
- nav.ZIndex = 53
- nav.Parent = body
+local NAV_RATIO = 0.24
+local GAP = 0.018
+local nav = Instance.new("ScrollingFrame")
+nav.Name = "Nav"
+nav.Size = UDim2.new(NAV_RATIO, 0, 1, -BOTTOM_SAFE)
+nav.BackgroundColor3 = C_BG
+nav.BorderSizePixel = 0
+nav.ScrollBarThickness = 3
+nav.ScrollBarImageColor3 = C_SKY3
+nav.CanvasSize = UDim2.new(0, 0, 0, 0)
+nav.AutomaticCanvasSize = Enum.AutomaticSize.Y
+nav.ZIndex = 53
+nav.Parent = body
 
- local navCorner = Instance.new("UICorner")
- navCorner.CornerRadius = UDim.new(0, 16)
- navCorner.Parent = nav
+local navCorner = Instance.new("UICorner")
+navCorner.CornerRadius = UDim.new(0, 16)
+navCorner.Parent = nav
 
- local navLayout = Instance.new("UIListLayout")
- navLayout.Padding = UDim.new(0, 8)
- navLayout.SortOrder = Enum.SortOrder.LayoutOrder
- navLayout.Parent = nav
+local navLayout = Instance.new("UIListLayout")
+navLayout.Padding = UDim.new(0, 8)
+navLayout.SortOrder = Enum.SortOrder.LayoutOrder
+navLayout.Parent = nav
 
- local navPadding = Instance.new("UIPadding")
- navPadding.PaddingLeft = UDim.new(0, 8)
- navPadding.PaddingRight = UDim.new(0, 8)
- navPadding.PaddingTop = UDim.new(0, 10)
- navPadding.PaddingBottom = UDim.new(0, 10)
- navPadding.Parent = nav
+local navPadding = Instance.new("UIPadding")
+navPadding.PaddingLeft = UDim.new(0, 8)
+navPadding.PaddingRight = UDim.new(0, 8)
+navPadding.PaddingTop = UDim.new(0, 10)
+navPadding.PaddingBottom = UDim.new(0, 10)
+navPadding.Parent = nav
 
- -- 浅蓝浅粉交替导航
- local navItems = {
-     {name = "公告", icon = "📢", accent = C_PINK3, bg = C_PINK},
-     {name = "绘制", icon = "🎨", accent = C_SKY3, bg = C_SKY},
-     {name = "自瞄", icon = "🎯", accent = C_SKY3, bg = C_SKY},
-     {name = "子追", icon = "🔫", accent = C_PINK3, bg = C_PINK},
-     {name = "功能", icon = "⚡", accent = C_SKY3, bg = C_SKY},
- }
+-- 浅蓝浅粉交替导航
+local navItems = {
+    {name = "公告", icon = "📢", accent = C_PINK3, bg = C_PINK},
+    {name = "绘制", icon = "🎨", accent = C_SKY3, bg = C_SKY},
+    {name = "自瞄", icon = "🎯", accent = C_SKY3, bg = C_SKY},
+    {name = "子追", icon = "🔫", accent = C_PINK3, bg = C_PINK},
+    {name = "功能", icon = "⚡", accent = C_SKY3, bg = C_SKY},
+}
 
- local navBtns = {}
- local pages = {}
- local selectedIdx = 1
+local navBtns = {}
+local pages = {}
+local selectedIdx = 1
 
- for i, item in ipairs(navItems) do
-     local btn = Instance.new("TextButton")
-     btn.Name = item.name
-     btn.Size = UDim2.new(1, 0, 0, 56)
-     btn.BackgroundColor3 = (i == 1) and item.bg or C_CARD
-     btn.BackgroundTransparency = (i == 1) and 0.4 or 0
-     btn.Text = item.icon
-     btn.TextColor3 = (i == 1) and C_TEXT or C_TEXT2
-     btn.TextSize = 22
-     btn.Font = Enum.Font.GothamBold
-     btn.BorderSizePixel = 0
-     btn.AutoButtonColor = false
-     btn.LayoutOrder = i
-     btn.ZIndex = 54
-     btn.Parent = nav
+for i, item in ipairs(navItems) do
+    local btn = Instance.new("TextButton")
+    btn.Name = item.name
+    btn.Size = UDim2.new(1, 0, 0, 56)
+    btn.BackgroundColor3 = (i == 1) and item.bg or C_CARD
+    btn.BackgroundTransparency = (i == 1) and 0.4 or 0
+    btn.Text = item.icon
+    btn.TextColor3 = (i == 1) and C_TEXT or C_TEXT2
+    btn.TextSize = 22
+    btn.Font = Enum.Font.GothamBold
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    btn.LayoutOrder = i
+    btn.ZIndex = 54
+    btn.Parent = nav
 
-     local btnC = Instance.new("UICorner")
-     btnC.CornerRadius = UDim.new(0, 14)
-     btnC.Parent = btn
+    local btnC = Instance.new("UICorner")
+    btnC.CornerRadius = UDim.new(0, 14)
+    btnC.Parent = btn
 
-     -- 左侧彩色指示条
-     local indicator = Instance.new("Frame")
-     indicator.Name = "Indicator"
-     indicator.Size = UDim2.new(0, 4, 0, 24)
-     indicator.Position = UDim2.new(0, 0, 0.5, -12)
-     indicator.BackgroundColor3 = item.accent
-     indicator.BorderSizePixel = 0
-     indicator.ZIndex = 55
-     indicator.Visible = (i == 1)
-     indicator.Parent = btn
+    -- 左侧彩色指示条
+    local indicator = Instance.new("Frame")
+    indicator.Name = "Indicator"
+    indicator.Size = UDim2.new(0, 4, 0, 24)
+    indicator.Position = UDim2.new(0, 0, 0.5, -12)
+    indicator.BackgroundColor3 = item.accent
+    indicator.BorderSizePixel = 0
+    indicator.ZIndex = 55
+    indicator.Visible = (i == 1)
+    indicator.Parent = btn
 
-     local indC = Instance.new("UICorner")
-     indC.CornerRadius = UDim.new(0, 2)
-     indC.Parent = indicator
+    local indC = Instance.new("UICorner")
+    indC.CornerRadius = UDim.new(0, 2)
+    indC.Parent = indicator
 
-     local lbl = Instance.new("TextLabel")
-     lbl.Size = UDim2.new(1, 0, 0, 14)
-     lbl.Position = UDim2.new(0, 0, 1, -15)
-     lbl.BackgroundTransparency = 1
-     lbl.Text = item.name
-     lbl.TextColor3 = (i == 1) and C_TEXT or C_TEXT2
-     lbl.TextSize = 10
-     lbl.Font = Enum.Font.Gotham
-     lbl.ZIndex = 55
-     lbl.Parent = btn
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, 0, 0, 14)
+    lbl.Position = UDim2.new(0, 0, 1, -15)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = item.name
+    lbl.TextColor3 = (i == 1) and C_TEXT or C_TEXT2
+    lbl.TextSize = 10
+    lbl.Font = Enum.Font.Gotham
+    lbl.ZIndex = 55
+    lbl.Parent = btn
 
-     btn.MouseEnter:Connect(function()
-         if selectedIdx ~= i then
-             TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = item.bg}):Play()
-             TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.6}):Play()
-         end
-     end)
-     btn.MouseLeave:Connect(function()
-         if selectedIdx ~= i then
-             TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = C_CARD}):Play()
-             TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
-         end
-     end)
+    btn.MouseEnter:Connect(function()
+        if selectedIdx ~= i then
+            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = item.bg}):Play()
+            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.6}):Play()
+        end
+    end)
+    btn.MouseLeave:Connect(function()
+        if selectedIdx ~= i then
+            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = C_CARD}):Play()
+            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+        end
+    end)
 
-     navBtns[i] = btn
- end
+    navBtns[i] = btn
+end
 
- local content = Instance.new("Frame")
- content.Name = "Content"
- content.Size = UDim2.new(1 - NAV_RATIO - GAP, 0, 1, -BOTTOM_SAFE)
- content.Position = UDim2.new(NAV_RATIO + GAP, 0, 0, 0)
- content.BackgroundTransparency = 1
- content.ClipsDescendants = true
- content.ZIndex = 53
- content.Parent = body
+local content = Instance.new("Frame")
+content.Name = "Content"
+content.Size = UDim2.new(1 - NAV_RATIO - GAP, 0, 1, -BOTTOM_SAFE)
+content.Position = UDim2.new(NAV_RATIO + GAP, 0, 0, 0)
+content.BackgroundTransparency = 1
+content.ClipsDescendants = true
+content.ZIndex = 53
+content.Parent = body
 
 -- ============================================================
 --  浅蓝浅粉拼凑组件工厂
@@ -489,7 +489,6 @@ local function createToggle(parent, labelText, accentColor, onToggle)
     rowC.CornerRadius = UDim.new(0, 14)
     rowC.Parent = row
 
-    -- 彩色微边框
     local rowStroke = Instance.new("UIStroke")
     rowStroke.Color = accentColor
     rowStroke.Thickness = 1
@@ -1006,7 +1005,7 @@ local function createNoticePage()
     noticeText.Size = UDim2.new(1, -24, 1, -24)
     noticeText.Position = UDim2.new(0, 12, 0, 12)
     noticeText.BackgroundTransparency = 1
-    noticeText.Text = "Ly枪战辅助  v30.0 浅蓝浅粉版\n\n欢迎使用本脚本！\n\n本次更新：\n• UI全面升级为浅蓝浅粉清新风格\n• 顶部栏浅蓝背景配粉色装饰圆\n• 导航栏蓝粉交替卡片设计\n• 卡片彩色微边框 + 圆角\n• ESP视野内方框蓝色，视野外白色\n• 下拉框展开收起动画\n\n功能：\n• 高级绘制（方框/名字/血量/距离/透视）\n• 自瞄辅助（平滑/多条件优先）\n• 子弹追踪（预判/FOV）\n• 自动开枪 / 修改射速\n• 敌人传送 / 杀戮光环\n\n作者：林玉"
+    noticeText.Text = "Ly枪战辅助  v31.0 浅蓝浅粉版\n\n欢迎使用本脚本！\n\n本次更新：\n• 修复UI面板偶尔会跳到右下角的Bug\n• 添加动画状态锁，防止重复触发\n• 关闭面板后正确重置位置和大小\n• UI全面升级为浅蓝浅粉清新风格\n• 顶部栏浅蓝背景配粉色装饰圆\n• 导航栏蓝粉交替卡片设计\n• 卡片彩色微边框 + 圆角\n• ESP视野内方框蓝色，视野外白色\n\n功能：\n• 高级绘制（方框/名字/血量/距离/透视）\n• 自瞄辅助（平滑/多条件优先）\n• 子弹追踪（预判/FOV）\n• 自动开枪 / 修改射速\n• 敌人传送 / 杀戮光环\n\n作者：林玉"
     noticeText.TextColor3 = C_TEXT
     noticeText.TextSize = 13
     noticeText.Font = Enum.Font.Gotham
@@ -1031,6 +1030,9 @@ end
 pages[1] = createNoticePage()
 pages[1].Visible = true
 
+-- ============================================================
+--  页面切换 — 带状态保护
+-- ============================================================
 local function switchPage(idx)
     if selectedIdx == idx then return end
 
@@ -1073,45 +1075,80 @@ for i, btn in ipairs(navBtns) do
     end)
 end
 
+-- ============================================================
+--  面板开关 — 修复右下角Bug（添加状态锁 + Tween管理）
+-- ============================================================
 local isOpen = false
+local isAnimating = false
+local currentTween = nil
 
 local function openPanel()
+    if isOpen or isAnimating then return end
+    isAnimating = true
     isOpen = true
+
+    -- 取消任何正在进行的Tween
+    if currentTween then
+        currentTween:Cancel()
+        currentTween = nil
+    end
+
     orb.Visible = false
     panel.Visible = true
 
+    -- 强制重置面板状态，确保从屏幕中心开始
     panel.AnchorPoint = Vector2.new(0.5, 0.5)
     panel.Size = UDim2.new(0, 0, 0, 0)
     panel.Position = UDim2.new(0.5, 0, 0.5, 0)
 
-    TweenService:Create(panel, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    currentTween = TweenService:Create(panel, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Size = UDim2.new(PANEL_W, 0, PANEL_H, 0),
         Position = UDim2.new(PANEL_X + PANEL_W/2, 0, PANEL_Y + PANEL_H/2, 0),
-    }):Play()
+    })
+    currentTween:Play()
 
     task.delay(0.5, function()
-        if panel.Visible then
+        if panel.Visible and isOpen then
             panel.AnchorPoint = Vector2.new(0, 0)
             panel.Position = UDim2.new(PANEL_X, 0, PANEL_Y, 0)
         end
+        isAnimating = false
     end)
 end
 
 local function closePanel()
+    if not isOpen or isAnimating then return end
+    isAnimating = true
     isOpen = false
 
+    -- 取消任何正在进行的Tween
+    if currentTween then
+        currentTween:Cancel()
+        currentTween = nil
+    end
+
+    -- 先确保面板在正确位置再开始关闭动画
     panel.AnchorPoint = Vector2.new(0.5, 0.5)
     panel.Position = UDim2.new(PANEL_X + PANEL_W/2, 0, PANEL_Y + PANEL_H/2, 0)
 
-    TweenService:Create(panel, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+    currentTween = TweenService:Create(panel, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
         Size = UDim2.new(0, 0, 0, 0),
         Position = UDim2.new(0.5, 0, 0.5, 0),
-    }):Play()
+    })
+    currentTween:Play()
 
-    task.wait(0.35)
-    panel.Visible = false
-    panel.AnchorPoint = Vector2.new(0, 0)
-    orb.Visible = true
+    -- 使用 task.delay 代替 task.wait，避免阻塞线程
+    task.delay(0.35, function()
+        if not isOpen then
+            panel.Visible = false
+            panel.AnchorPoint = Vector2.new(0, 0)
+            -- 关键修复：关闭后重置到初始右下角位置
+            panel.Position = UDim2.new(1, -68, 1, -68)
+            panel.Size = UDim2.new(0, 0, 0, 0)
+            orb.Visible = true
+        end
+        isAnimating = false
+    end)
 end
 
 shrinkBtn.MouseButton1Click:Connect(closePanel)
