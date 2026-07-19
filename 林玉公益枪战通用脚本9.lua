@@ -39,6 +39,20 @@ local ESP2_Settings = {
     RadarRange = 200,
     RadarPosX = 150,
     RadarPosY = 150,
+    RadarVisibleColor = "绿色",
+    RadarHiddenColor = "红色",
+}
+
+local ColorMap = {
+    ["红色"] = Color3.fromRGB(255, 0, 0),
+    ["绿色"] = Color3.fromRGB(0, 255, 0),
+    ["蓝色"] = Color3.fromRGB(0, 120, 255),
+    ["黄色"] = Color3.fromRGB(255, 255, 0),
+    ["青色"] = Color3.fromRGB(0, 255, 255),
+    ["紫色"] = Color3.fromRGB(180, 0, 255),
+    ["橙色"] = Color3.fromRGB(255, 150, 0),
+    ["白色"] = Color3.fromRGB(255, 255, 255),
+    ["粉色"] = Color3.fromRGB(255, 100, 180),
 }
 
 local ESP2 = {
@@ -1335,11 +1349,11 @@ local function updateRadar()
                     dot.Position = Vector2.new(dotX, dotY)
                     dot.Radius = 3
 
-                    -- 可见=绿色，不可见=红色
+                    -- 使用自定义颜色
                     if head and IsVisible(head) then
-                        dot.Color = Color3.fromRGB(0, 255, 0)
+                        dot.Color = ColorMap[ESP2_Settings.RadarVisibleColor] or Color3.fromRGB(0, 255, 0)
                     else
-                        dot.Color = Color3.fromRGB(255, 0, 0)
+                        dot.Color = ColorMap[ESP2_Settings.RadarHiddenColor] or Color3.fromRGB(255, 0, 0)
                     end
                 else
                     dot.Visible = false
@@ -1662,6 +1676,14 @@ createSlider(pages[2].Container, "雷达Y位置", C_PINK, 50, 600, 150, function
     ESP2_Settings.RadarPosY = v
 end).LayoutOrder = 14
 
+createDropdown(pages[2].Container, "可见颜色", C_PINK, {"绿色", "红色", "蓝色", "黄色", "青色", "紫色", "橙色", "白色", "粉色"}, 1, function(v)
+    ESP2_Settings.RadarVisibleColor = v
+end).LayoutOrder = 15
+
+createDropdown(pages[2].Container, "不可见颜色", C_PINK, {"红色", "绿色", "蓝色", "黄色", "青色", "紫色", "橙色", "白色", "粉色"}, 1, function(v)
+    ESP2_Settings.RadarHiddenColor = v
+end).LayoutOrder = 16
+
 pages[3] = createFeaturePage("自瞄", "自瞄", "自瞄功能详细设置", C_BLUE)
 
 createToggle(pages[3].Container, "启用自瞄", C_BLUE, function(v)
@@ -1845,7 +1867,6 @@ local function autoFireLoop()
     autoFireRunning = true
 
     while MiscConfig.AutoFire do
-        local now = tick()
         local shouldFire = false
         local cameraPos = Camera.CFrame.Position
         local cameraDir = Camera.CFrame.LookVector
@@ -1858,7 +1879,6 @@ local function autoFireLoop()
                 local humanoid = char:FindFirstChildOfClass("Humanoid")
 
                 if head and humanoid and humanoid.Health > 0 then
-                    -- 漏打检测：只打可见目标
                     if not IsVisible(head) then continue end
 
                     local toTarget = head.Position - cameraPos
@@ -1876,14 +1896,8 @@ local function autoFireLoop()
         end
 
         if shouldFire then
-            pcall(function()
-                VirtualUser:CaptureController()
-                VirtualUser:Button1Down(Vector2.new(0, 0))
-            end)
-            task.wait(0.02)
-            pcall(function()
-                VirtualUser:Button1Up(Vector2.new(0, 0))
-            end)
+            VirtualUser:Button1Down(Vector2.new(0, 0))
+            VirtualUser:Button1Up(Vector2.new(0, 0))
         end
 
         task.wait(MiscConfig.AutoFireDelay)
@@ -1892,15 +1906,6 @@ local function autoFireLoop()
     autoFireRunning = false
 end
 
--- 监听开关变化启动/停止循环
-local autoFireToggleConn = nil
-local function updateAutoFireLoop()
-    if MiscConfig.AutoFire and not autoFireRunning then
-        task.spawn(autoFireLoop)
-    end
-end
-
--- 用 Heartbeat 检测开关状态（轻量，不阻塞渲染）
 RunService.Heartbeat:Connect(function()
     if MiscConfig.AutoFire and not autoFireRunning then
         task.spawn(autoFireLoop)
@@ -1987,7 +1992,6 @@ local function autoFireLoop()
     autoFireRunning = true
 
     while MiscConfig.AutoFire do
-        local now = tick()
         local shouldFire = false
         local cameraPos = Camera.CFrame.Position
         local cameraDir = Camera.CFrame.LookVector
@@ -2000,7 +2004,6 @@ local function autoFireLoop()
                 local humanoid = char:FindFirstChildOfClass("Humanoid")
 
                 if head and humanoid and humanoid.Health > 0 then
-                    -- 漏打检测：只打可见目标
                     if not IsVisible(head) then continue end
 
                     local toTarget = head.Position - cameraPos
@@ -2018,14 +2021,8 @@ local function autoFireLoop()
         end
 
         if shouldFire then
-            pcall(function()
-                VirtualUser:CaptureController()
-                VirtualUser:Button1Down(Vector2.new(0, 0))
-            end)
-            task.wait(0.02)
-            pcall(function()
-                VirtualUser:Button1Up(Vector2.new(0, 0))
-            end)
+            VirtualUser:Button1Down(Vector2.new(0, 0))
+            VirtualUser:Button1Up(Vector2.new(0, 0))
         end
 
         task.wait(MiscConfig.AutoFireDelay)
@@ -2034,15 +2031,6 @@ local function autoFireLoop()
     autoFireRunning = false
 end
 
--- 监听开关变化启动/停止循环
-local autoFireToggleConn = nil
-local function updateAutoFireLoop()
-    if MiscConfig.AutoFire and not autoFireRunning then
-        task.spawn(autoFireLoop)
-    end
-end
-
--- 用 Heartbeat 检测开关状态（轻量，不阻塞渲染）
 RunService.Heartbeat:Connect(function()
     if MiscConfig.AutoFire and not autoFireRunning then
         task.spawn(autoFireLoop)
@@ -2188,19 +2176,12 @@ local function killAuraLoop()
         end
 
         if bestTarget then
-            -- 旋转视角朝向目标
-            local targetCF = CFrame.new(Camera.CFrame.Position, bestTarget.Position)
-            Camera.CFrame = Camera.CFrame:Lerp(targetCF, 0.3)
+            -- 瞬间锁定视角朝向目标
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, bestTarget.Position)
 
             -- 自动开火
-            pcall(function()
-                VirtualUser:CaptureController()
-                VirtualUser:Button1Down(Vector2.new(0, 0))
-            end)
-            task.wait(0.03)
-            pcall(function()
-                VirtualUser:Button1Up(Vector2.new(0, 0))
-            end)
+            VirtualUser:Button1Down(Vector2.new(0, 0))
+            VirtualUser:Button1Up(Vector2.new(0, 0))
         end
 
         task.wait(0.05)
