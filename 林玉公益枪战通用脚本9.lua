@@ -1608,7 +1608,7 @@ local success, err = pcall(function()
         local method = getnamecallmethod()
         local args = {...}
 
-        -- 静默自瞄：不动视野，修改射线方向命中目标
+        -- 静默自瞄：不动视野，直接返回命中结果
         if SilentAimConfig.Enabled and (method == "Raycast" or method == "FindPartOnRay") and not checkcaller() and self == Workspace then
             local origin, direction
             if method == "Raycast" then
@@ -1626,16 +1626,12 @@ local success, err = pcall(function()
                 local silentTarget = getSilentAimTarget()
                 if silentTarget then
                     local targetPos = silentTarget.Position
-                    local newDirection = (targetPos - origin).Unit * direction.Magnitude
-
-                    if method == "Raycast" then
-                        args[2] = newDirection
-                        return oldHook(self, unpack(args))
-                    else
-                        local newRay = Ray.new(origin, newDirection)
-                        args[1] = newRay
-                        return oldHook(self, unpack(args))
-                    end
+                    return {
+                        Instance = silentTarget,
+                        Position = targetPos,
+                        Normal = (targetPos - origin).Unit,
+                        Material = Enum.Material.Plastic
+                    }
                 end
             end
         end
@@ -1916,11 +1912,11 @@ end).LayoutOrder = 8
 
 createSlider(pages[6].Container, "光环范围", C_BLUE, 1, 100, 50, function(v)
     MiscConfig.KillAuraRange = v
-end).LayoutOrder = 12
+end).LayoutOrder = 9
 
 createDropdown(pages[6].Container, "优先条件", C_BLUE, {"距离优先", "血量优先", "视角优先"}, 1, function(v)
     MiscConfig.KillAuraPriority = v
-end).LayoutOrder = 13
+end).LayoutOrder = 10
 
 
 RunService.Heartbeat:Connect(function()
