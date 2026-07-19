@@ -129,15 +129,16 @@ ui.ResetOnSpawn = false
 ui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ui.Parent = playerGui
 
--- ========== 精致悬浮球 ==========
-local orb = Instance.new("Frame")
+-- ========== 精致悬浮球 (TextButton 确保可点击拖拽) ==========
+local orb = Instance.new("TextButton")
 orb.Name = "Orb"
 orb.Size = UDim2.new(0, 52, 0, 52)
 orb.Position = UDim2.new(1, -72, 1, -72)
 orb.BackgroundColor3 = C_ACCENT
 orb.BorderSizePixel = 0
+orb.Text = ""
 orb.ZIndex = 100
-orb.Active = true
+orb.AutoButtonColor = false
 orb.Parent = ui
 
 local orbCorner = Instance.new("UICorner")
@@ -324,7 +325,7 @@ verLabel.Size = UDim2.new(0, 50, 0, 18)
 verLabel.Position = UDim2.new(0, 110, 0.5, -9)
 verLabel.BackgroundColor3 = C_ACCENT
 verLabel.BackgroundTransparency = 0.85
-verLabel.Text = "v2.7"
+verLabel.Text = "v2.8"
 verLabel.TextColor3 = C_ACCENT
 verLabel.TextSize = 10
 verLabel.Font = Enum.Font.GothamBold
@@ -960,7 +961,7 @@ local function createNoticePage()
     bannerVer.Position = UDim2.new(0, 14, 0, 46)
     bannerVer.BackgroundColor3 = C_ACCENT
     bannerVer.BackgroundTransparency = 0.2
-    bannerVer.Text = "v2.7"
+    bannerVer.Text = "v2.8"
     bannerVer.TextColor3 = Color3.fromRGB(255,255,255)
     bannerVer.TextSize = 11
     bannerVer.Font = Enum.Font.GothamBold
@@ -1099,7 +1100,7 @@ local function createNoticePage()
     lcTitle.Parent = logCard
 
     local logs = {
-        {date = "2025.07.19", ver = "v2.7", text = "UI全面重构，新增漏打检测变色"},
+        {date = "2025.07.19", ver = "v2.8", text = "UI全面重构，新增漏打检测变色"},
         {date = "2025.07.16", ver = "v2.4", text = "修复ESP重生后绘制中断问题"},
         {date = "2025.07.14", ver = "v2.3", text = "新增雷达系统，支持自定义位置"},
     }
