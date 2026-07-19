@@ -10,25 +10,30 @@ local playerGui = player:WaitForChild("PlayerGui")
 local Camera = Workspace.CurrentCamera
 
 -- ============================================================
---  美化版配色方案 — 深色玻璃拟态主题
+--  浅蓝浅粉拼凑配色 — 清新马卡龙主题
 -- ============================================================
-local C_ACCENT1   = Color3.fromRGB(0, 210, 255)      -- 霓虹青蓝
-local C_ACCENT2   = Color3.fromRGB(255, 80, 180)       -- 霓虹粉紫
-local C_BG_DARK   = Color3.fromRGB(18, 18, 24)         -- 主背景深灰
-local C_BG_PANEL  = Color3.fromRGB(28, 28, 38)         -- 面板背景
-local C_BG_CARD   = Color3.fromRGB(38, 38, 52)         -- 卡片背景
-local C_BG_NAV    = Color3.fromRGB(22, 22, 32)         -- 导航栏背景
-local C_TEXT      = Color3.fromRGB(245, 245, 255)      -- 主文字白
-local C_TEXT2     = Color3.fromRGB(160, 160, 180)      -- 次要文字灰
-local C_TEXT3     = Color3.fromRGB(120, 120, 140)      -- 辅助文字
+local C_SKY       = Color3.fromRGB(180, 230, 255)   -- 天空浅蓝
+local C_SKY2      = Color3.fromRGB(140, 210, 245)   -- 中浅蓝
+local C_SKY3      = Color3.fromRGB(100, 190, 235)   -- 深蓝强调
+local C_PINK      = Color3.fromRGB(255, 200, 220)   -- 樱花浅粉
+local C_PINK2     = Color3.fromRGB(255, 170, 200)   -- 中浅粉
+local C_PINK3     = Color3.fromRGB(255, 140, 180)   -- 深粉强调
+local C_BG        = Color3.fromRGB(245, 250, 255)   -- 极浅蓝白背景
+local C_BG_PANEL  = Color3.fromRGB(255, 250, 252)   -- 极浅粉白面板
+local C_CARD      = Color3.fromRGB(255, 255, 255)   -- 纯白卡片
+local C_CARD_SKY  = Color3.fromRGB(235, 248, 255)   -- 浅蓝卡片
+local C_CARD_PINK = Color3.fromRGB(255, 242, 248)   -- 浅粉卡片
+local C_TEXT      = Color3.fromRGB(60, 65, 85)      -- 主文字
+local C_TEXT2     = Color3.fromRGB(130, 135, 155)   -- 次要文字
+local C_TEXT3     = Color3.fromRGB(160, 165, 185)   -- 辅助文字
 local C_WHITE     = Color3.fromRGB(255, 255, 255)
 local C_BLACK     = Color3.fromRGB(0, 0, 0)
-local C_GRAY      = Color3.fromRGB(60, 60, 75)
-local C_GRAY2     = Color3.fromRGB(45, 45, 60)
-local C_GREEN     = Color3.fromRGB(80, 255, 120)
-local C_RED       = Color3.fromRGB(255, 80, 80)
-local C_INVIS     = Color3.fromRGB(255, 255, 255)       -- ESP初始色（白色）
-local C_VISIBLE   = Color3.fromRGB(0, 150, 255)        -- ESP视野内蓝色
+local C_GRAY      = Color3.fromRGB(220, 225, 235)   -- 浅灰轨道
+local C_GRAY2     = Color3.fromRGB(200, 205, 218)   -- 中浅灰
+local C_GREEN     = Color3.fromRGB(120, 230, 160)
+local C_RED       = Color3.fromRGB(255, 120, 140)
+local C_INVIS     = Color3.fromRGB(255, 255, 255)   -- ESP初始色（白色）
+local C_VISIBLE   = Color3.fromRGB(0, 150, 255)      -- ESP视野内蓝色
 
 local ESP2_Settings = {
     Enabled = false,
@@ -131,19 +136,18 @@ Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
 end)
 
 -- ============================================================
---  UI 根节点 — 保留原有悬浮球，不修改
+--  UI 根节点 — 悬浮球保持原样
 -- ============================================================
 local ui = Instance.new("ScreenGui")
 ui.Name = "Ly枪战辅助"
 ui.ResetOnSpawn = false
 ui.Parent = playerGui
 
--- 悬浮球 — 保持原样不修改
 local orb = Instance.new("TextButton")
 orb.Name = "Orb"
 orb.Size = UDim2.new(0, 48, 0, 48)
 orb.Position = UDim2.new(1, -64, 1, -64)
-orb.BackgroundColor3 = C_ACCENT1
+orb.BackgroundColor3 = C_SKY3
 orb.BorderSizePixel = 0
 orb.Text = "Ly"
 orb.TextColor3 = C_WHITE
@@ -158,7 +162,7 @@ orbCorner.CornerRadius = UDim.new(1, 0)
 orbCorner.Parent = orb
 
 local orbStroke = Instance.new("UIStroke")
-orbStroke.Color = C_ACCENT2
+orbStroke.Color = C_PINK3
 orbStroke.Thickness = 2
 orbStroke.Transparency = 0.5
 orbStroke.Parent = orb
@@ -177,7 +181,7 @@ spawn(function()
 end)
 
 -- ============================================================
---  主面板 — 玻璃拟态 + 霓虹光效
+--  主面板 — 浅蓝浅粉拼凑风格
 -- ============================================================
 local PANEL_W = 0.72
 local PANEL_H = PANEL_W * (420 / 320)
@@ -197,291 +201,299 @@ panel.ZIndex = 50
 panel.Parent = ui
 
 local panelCorner = Instance.new("UICorner")
-panelCorner.CornerRadius = UDim.new(0, 20)
+panelCorner.CornerRadius = UDim.new(0, 24)
 panelCorner.Parent = panel
 
 local panelShadow = Instance.new("Frame")
-panelShadow.Size = UDim2.new(1, 20, 1, 20)
-panelShadow.Position = UDim2.new(0, -10, 0, -10)
+panelShadow.Size = UDim2.new(1, 16, 1, 16)
+panelShadow.Position = UDim2.new(0, -8, 0, -8)
 panelShadow.BackgroundColor3 = C_BLACK
-panelShadow.BackgroundTransparency = 0.85
+panelShadow.BackgroundTransparency = 0.88
 panelShadow.BorderSizePixel = 0
 panelShadow.ZIndex = 49
 panelShadow.Parent = panel
 
 local panelShadowCorner = Instance.new("UICorner")
-panelShadowCorner.CornerRadius = UDim.new(0, 26)
+panelShadowCorner.CornerRadius = UDim.new(0, 28)
 panelShadowCorner.Parent = panelShadow
 
-local panelGlow = Instance.new("UIStroke")
-panelGlow.Color = C_ACCENT1
-panelGlow.Thickness = 1.2
-panelGlow.Transparency = 0.6
-panelGlow.Parent = panel
+-- 顶部粉蓝渐变装饰条
+local topGradient = Instance.new("Frame")
+topGradient.Name = "TopGradient"
+topGradient.Size = UDim2.new(1, 0, 0, 4)
+topGradient.Position = UDim2.new(0, 0, 0, 0)
+topGradient.BorderSizePixel = 0
+ topGradient.ZIndex = 51
+ topGradient.Parent = panel
 
-local gradientOverlay = Instance.new("Frame")
-gradientOverlay.Name = "GradientOverlay"
-gradientOverlay.Size = UDim2.new(1, 0, 1, 0)
-gradientOverlay.BackgroundTransparency = 1
-gradientOverlay.ZIndex = 51
-gradientOverlay.Parent = panel
+ local topGradColor = Instance.new("UIGradient")
+ topGradColor.Color = ColorSequence.new({
+     ColorSequenceKeypoint.new(0, C_SKY3),
+     ColorSequenceKeypoint.new(0.5, C_PINK3),
+     ColorSequenceKeypoint.new(1, C_SKY3)
+ })
+ topGradColor.Rotation = 90
+ topGradColor.Parent = topGradient
 
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 210, 255)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 80, 180)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 210, 255))
-})
-gradient.Rotation = 45
-gradient.Transparency = NumberSequence.new({
-    NumberSequenceKeypoint.new(0, 0.97),
-    NumberSequenceKeypoint.new(0.5, 0.95),
-    NumberSequenceKeypoint.new(1, 0.97)
-})
-gradient.Parent = gradientOverlay
+ local inner = Instance.new("Frame")
+ inner.Name = "Inner"
+ inner.Size = UDim2.new(1, 0, 1, 0)
+ inner.BackgroundColor3 = C_BG_PANEL
+ inner.BackgroundTransparency = 0
+ inner.ClipsDescendants = true
+ inner.ZIndex = 52
+ inner.Parent = panel
 
-local inner = Instance.new("Frame")
-inner.Name = "Inner"
-inner.Size = UDim2.new(1, 0, 1, 0)
-inner.BackgroundColor3 = C_BG_PANEL
-inner.BackgroundTransparency = 0
-inner.ClipsDescendants = true
-inner.ZIndex = 52
-inner.Parent = panel
+ local innerCorner = Instance.new("UICorner")
+ innerCorner.CornerRadius = UDim.new(0, 24)
+ innerCorner.Parent = inner
 
-local innerCorner = Instance.new("UICorner")
-innerCorner.CornerRadius = UDim.new(0, 20)
-innerCorner.Parent = inner
+ -- ============================================================
+ --  顶部栏 — 浅蓝背景 + 粉装饰
+ -- ============================================================
+ local TOPBAR_H = 52
+ local topBar = Instance.new("Frame")
+ topBar.Name = "TopBar"
+ topBar.Size = UDim2.new(1, 0, 0, TOPBAR_H)
+ topBar.BackgroundColor3 = C_SKY
+ topBar.BorderSizePixel = 0
+ topBar.ZIndex = 53
+
+ topBar.ClipsDescendants = true
+ local topBarMask = Instance.new("Frame")
+ topBarMask.Size = UDim2.new(1, 0, 0.5, 0)
+ topBarMask.Position = UDim2.new(0, 0, 0.5, 0)
+ topBarMask.BackgroundColor3 = C_SKY
+ topBarMask.BorderSizePixel = 0
+ topBarMask.ZIndex = 54
+ topBarMask.Parent = topBar
+
+ local topBarCorner = Instance.new("UICorner")
+ topBarCorner.CornerRadius = UDim.new(0, 24)
+ topBarCorner.Parent = topBar
+
+ -- 右上角粉色装饰圆
+ local topDecor = Instance.new("Frame")
+ topDecor.Size = UDim2.new(0, 60, 0, 60)
+ topDecor.Position = UDim2.new(1, -30, 0, -20)
+ topDecor.BackgroundColor3 = C_PINK
+ topDecor.BackgroundTransparency = 0.6
+ topDecor.BorderSizePixel = 0
+ topDecor.ZIndex = 53
+ topDecor.Parent = topBar
+
+ local topDecorC = Instance.new("UICorner")
+ topDecorC.CornerRadius = UDim.new(1, 0)
+ topDecorC.Parent = topDecor
+
+ local topIcon = Instance.new("TextLabel")
+ topIcon.Size = UDim2.new(0, 28, 0, 28)
+ topIcon.Position = UDim2.new(0, 16, 0, 12)
+ topIcon.BackgroundTransparency = 1
+ topIcon.Text = "💠"
+ topIcon.TextColor3 = C_SKY3
+ topIcon.TextSize = 20
+ topIcon.Font = Enum.Font.GothamBold
+ topIcon.ZIndex = 55
+ topIcon.Parent = topBar
+
+ local topTitle = Instance.new("TextLabel")
+ topTitle.Size = UDim2.new(1, -110, 1, 0)
+ topTitle.Position = UDim2.new(0, 48, 0, 0)
+ topTitle.BackgroundTransparency = 1
+ topTitle.Text = "Ly枪战辅助"
+ topTitle.TextColor3 = C_TEXT
+ topTitle.TextSize = 18
+ topTitle.Font = Enum.Font.GothamBold
+ topTitle.TextXAlignment = Enum.TextXAlignment.Left
+ topTitle.ZIndex = 55
+ topTitle.Parent = topBar
+
+ local topSub = Instance.new("TextLabel")
+ topSub.Size = UDim2.new(0, 120, 0, 16)
+ topSub.Position = UDim2.new(0, 48, 0, 30)
+ topSub.BackgroundTransparency = 1
+ topSub.Text = "v30.0 浅蓝浅粉版"
+ topSub.TextColor3 = C_TEXT3
+ topSub.TextSize = 10
+ topSub.Font = Enum.Font.Gotham
+ topSub.TextXAlignment = Enum.TextXAlignment.Left
+ topSub.ZIndex = 55
+ topSub.Parent = topBar
+
+ local shrinkBtn = Instance.new("TextButton")
+ shrinkBtn.Name = "ShrinkBtn"
+ shrinkBtn.Size = UDim2.new(0, 32, 0, 32)
+ shrinkBtn.Position = UDim2.new(1, -42, 0, 10)
+ shrinkBtn.BackgroundColor3 = C_PINK2
+ shrinkBtn.Text = "✕"
+ shrinkBtn.TextColor3 = C_WHITE
+ shrinkBtn.TextSize = 14
+ shrinkBtn.Font = Enum.Font.GothamBold
+ shrinkBtn.BorderSizePixel = 0
+ shrinkBtn.AutoButtonColor = false
+ shrinkBtn.ZIndex = 56
+ shrinkBtn.Parent = topBar
+
+ local shrinkCorner = Instance.new("UICorner")
+ shrinkCorner.CornerRadius = UDim.new(1, 0)
+ shrinkCorner.Parent = shrinkBtn
+
+ shrinkBtn.MouseEnter:Connect(function()
+     TweenService:Create(shrinkBtn, TweenInfo.new(0.2), {BackgroundColor3 = C_PINK3}):Play()
+ end)
+ shrinkBtn.MouseLeave:Connect(function()
+     TweenService:Create(shrinkBtn, TweenInfo.new(0.2), {BackgroundColor3 = C_PINK2}):Play()
+ end)
+
+ topBar.Parent = inner
+
+ -- ============================================================
+ --  主体区域
+ -- ============================================================
+ local body = Instance.new("Frame")
+ body.Name = "Body"
+ body.Size = UDim2.new(1, 0, 1, -TOPBAR_H)
+ body.Position = UDim2.new(0, 0, 0, TOPBAR_H)
+ body.BackgroundTransparency = 1
+ body.ClipsDescendants = true
+ body.ZIndex = 52
+ body.Parent = inner
+
+ local NAV_RATIO = 0.24
+ local GAP = 0.018
+ local nav = Instance.new("ScrollingFrame")
+ nav.Name = "Nav"
+ nav.Size = UDim2.new(NAV_RATIO, 0, 1, -BOTTOM_SAFE)
+ nav.BackgroundColor3 = C_BG
+ nav.BorderSizePixel = 0
+ nav.ScrollBarThickness = 3
+ nav.ScrollBarImageColor3 = C_SKY3
+ nav.CanvasSize = UDim2.new(0, 0, 0, 0)
+ nav.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ nav.ZIndex = 53
+ nav.Parent = body
+
+ local navCorner = Instance.new("UICorner")
+ navCorner.CornerRadius = UDim.new(0, 16)
+ navCorner.Parent = nav
+
+ local navLayout = Instance.new("UIListLayout")
+ navLayout.Padding = UDim.new(0, 8)
+ navLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ navLayout.Parent = nav
+
+ local navPadding = Instance.new("UIPadding")
+ navPadding.PaddingLeft = UDim.new(0, 8)
+ navPadding.PaddingRight = UDim.new(0, 8)
+ navPadding.PaddingTop = UDim.new(0, 10)
+ navPadding.PaddingBottom = UDim.new(0, 10)
+ navPadding.Parent = nav
+
+ -- 浅蓝浅粉交替导航
+ local navItems = {
+     {name = "公告", icon = "📢", accent = C_PINK3, bg = C_PINK},
+     {name = "绘制", icon = "🎨", accent = C_SKY3, bg = C_SKY},
+     {name = "自瞄", icon = "🎯", accent = C_SKY3, bg = C_SKY},
+     {name = "子追", icon = "🔫", accent = C_PINK3, bg = C_PINK},
+     {name = "功能", icon = "⚡", accent = C_SKY3, bg = C_SKY},
+ }
+
+ local navBtns = {}
+ local pages = {}
+ local selectedIdx = 1
+
+ for i, item in ipairs(navItems) do
+     local btn = Instance.new("TextButton")
+     btn.Name = item.name
+     btn.Size = UDim2.new(1, 0, 0, 56)
+     btn.BackgroundColor3 = (i == 1) and item.bg or C_CARD
+     btn.BackgroundTransparency = (i == 1) and 0.4 or 0
+     btn.Text = item.icon
+     btn.TextColor3 = (i == 1) and C_TEXT or C_TEXT2
+     btn.TextSize = 22
+     btn.Font = Enum.Font.GothamBold
+     btn.BorderSizePixel = 0
+     btn.AutoButtonColor = false
+     btn.LayoutOrder = i
+     btn.ZIndex = 54
+     btn.Parent = nav
+
+     local btnC = Instance.new("UICorner")
+     btnC.CornerRadius = UDim.new(0, 14)
+     btnC.Parent = btn
+
+     -- 左侧彩色指示条
+     local indicator = Instance.new("Frame")
+     indicator.Name = "Indicator"
+     indicator.Size = UDim2.new(0, 4, 0, 24)
+     indicator.Position = UDim2.new(0, 0, 0.5, -12)
+     indicator.BackgroundColor3 = item.accent
+     indicator.BorderSizePixel = 0
+     indicator.ZIndex = 55
+     indicator.Visible = (i == 1)
+     indicator.Parent = btn
+
+     local indC = Instance.new("UICorner")
+     indC.CornerRadius = UDim.new(0, 2)
+     indC.Parent = indicator
+
+     local lbl = Instance.new("TextLabel")
+     lbl.Size = UDim2.new(1, 0, 0, 14)
+     lbl.Position = UDim2.new(0, 0, 1, -15)
+     lbl.BackgroundTransparency = 1
+     lbl.Text = item.name
+     lbl.TextColor3 = (i == 1) and C_TEXT or C_TEXT2
+     lbl.TextSize = 10
+     lbl.Font = Enum.Font.Gotham
+     lbl.ZIndex = 55
+     lbl.Parent = btn
+
+     btn.MouseEnter:Connect(function()
+         if selectedIdx ~= i then
+             TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = item.bg}):Play()
+             TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.6}):Play()
+         end
+     end)
+     btn.MouseLeave:Connect(function()
+         if selectedIdx ~= i then
+             TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = C_CARD}):Play()
+             TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+         end
+     end)
+
+     navBtns[i] = btn
+ end
+
+ local content = Instance.new("Frame")
+ content.Name = "Content"
+ content.Size = UDim2.new(1 - NAV_RATIO - GAP, 0, 1, -BOTTOM_SAFE)
+ content.Position = UDim2.new(NAV_RATIO + GAP, 0, 0, 0)
+ content.BackgroundTransparency = 1
+ content.ClipsDescendants = true
+ content.ZIndex = 53
+ content.Parent = body
 
 -- ============================================================
---  顶部栏 — 渐变标题 + 动态关闭按钮
--- ============================================================
-local TOPBAR_H = 52
-local topBar = Instance.new("Frame")
-topBar.Name = "TopBar"
-topBar.Size = UDim2.new(1, 0, 0, TOPBAR_H)
-topBar.BackgroundColor3 = C_BG_DARK
-topBar.BorderSizePixel = 0
-topBar.ZIndex = 53
-
-topBar.ClipsDescendants = true
-local topBarMask = Instance.new("Frame")
-topBarMask.Size = UDim2.new(1, 0, 0.5, 0)
-topBarMask.Position = UDim2.new(0, 0, 0.5, 0)
-topBarMask.BackgroundColor3 = C_BG_DARK
-topBarMask.BorderSizePixel = 0
-topBarMask.ZIndex = 54
-topBarMask.Parent = topBar
-
-local topBarCorner = Instance.new("UICorner")
-topBarCorner.CornerRadius = UDim.new(0, 20)
-topBarCorner.Parent = topBar
-
-local topIcon = Instance.new("TextLabel")
-topIcon.Size = UDim2.new(0, 28, 0, 28)
-topIcon.Position = UDim2.new(0, 16, 0, 12)
-topIcon.BackgroundTransparency = 1
-topIcon.Text = "⚡"
-topIcon.TextColor3 = C_ACCENT1
-topIcon.TextSize = 20
-topIcon.Font = Enum.Font.GothamBold
-topIcon.ZIndex = 55
-topIcon.Parent = topBar
-
-local topTitle = Instance.new("TextLabel")
-topTitle.Size = UDim2.new(1, -110, 1, 0)
-topTitle.Position = UDim2.new(0, 48, 0, 0)
-topTitle.BackgroundTransparency = 1
-topTitle.Text = "Ly枪战辅助"
-topTitle.TextColor3 = C_TEXT
-topTitle.TextSize = 18
-topTitle.Font = Enum.Font.GothamBold
-topTitle.TextXAlignment = Enum.TextXAlignment.Left
-topTitle.ZIndex = 55
-topTitle.Parent = topBar
-
-local topSub = Instance.new("TextLabel")
-topSub.Size = UDim2.new(0, 120, 0, 16)
-topSub.Position = UDim2.new(0, 48, 0, 30)
-topSub.BackgroundTransparency = 1
-topSub.Text = "v29.0 美化版"
-topSub.TextColor3 = C_TEXT3
-topSub.TextSize = 10
-topSub.Font = Enum.Font.Gotham
-topSub.TextXAlignment = Enum.TextXAlignment.Left
-topSub.ZIndex = 55
-topSub.Parent = topBar
-
-local shrinkBtn = Instance.new("TextButton")
-shrinkBtn.Name = "ShrinkBtn"
-shrinkBtn.Size = UDim2.new(0, 34, 0, 34)
-shrinkBtn.Position = UDim2.new(1, -44, 0, 9)
-shrinkBtn.BackgroundColor3 = C_GRAY2
-shrinkBtn.Text = "✕"
-shrinkBtn.TextColor3 = C_RED
-shrinkBtn.TextSize = 16
-shrinkBtn.Font = Enum.Font.GothamBold
-shrinkBtn.BorderSizePixel = 0
-shrinkBtn.AutoButtonColor = false
-shrinkBtn.ZIndex = 56
-shrinkBtn.Parent = topBar
-
-local shrinkCorner = Instance.new("UICorner")
-shrinkCorner.CornerRadius = UDim.new(0, 10)
-shrinkCorner.Parent = shrinkBtn
-
-shrinkBtn.MouseEnter:Connect(function()
-    TweenService:Create(shrinkBtn, TweenInfo.new(0.2), {BackgroundColor3 = C_RED}):Play()
-    TweenService:Create(shrinkBtn, TweenInfo.new(0.2), {TextColor3 = C_WHITE}):Play()
-end)
-shrinkBtn.MouseLeave:Connect(function()
-    TweenService:Create(shrinkBtn, TweenInfo.new(0.2), {BackgroundColor3 = C_GRAY2}):Play()
-    TweenService:Create(shrinkBtn, TweenInfo.new(0.2), {TextColor3 = C_RED}):Play()
-end)
-
-topBar.Parent = inner
-
--- ============================================================
---  主体区域
--- ============================================================
-local body = Instance.new("Frame")
-body.Name = "Body"
-body.Size = UDim2.new(1, 0, 1, -TOPBAR_H)
-body.Position = UDim2.new(0, 0, 0, TOPBAR_H)
-body.BackgroundTransparency = 1
-body.ClipsDescendants = true
-body.ZIndex = 52
-body.Parent = inner
-
-local NAV_RATIO = 0.24
-local GAP = 0.018
-local nav = Instance.new("ScrollingFrame")
-nav.Name = "Nav"
-nav.Size = UDim2.new(NAV_RATIO, 0, 1, -BOTTOM_SAFE)
-nav.BackgroundColor3 = C_BG_NAV
-nav.BorderSizePixel = 0
-nav.ScrollBarThickness = 3
-nav.ScrollBarImageColor3 = C_ACCENT1
-nav.CanvasSize = UDim2.new(0, 0, 0, 0)
-nav.AutomaticCanvasSize = Enum.AutomaticSize.Y
-nav.ZIndex = 53
-nav.Parent = body
-
-local navCorner = Instance.new("UICorner")
-navCorner.CornerRadius = UDim.new(0, 14)
-navCorner.Parent = nav
-
-local navLayout = Instance.new("UIListLayout")
-navLayout.Padding = UDim.new(0, 6)
-navLayout.SortOrder = Enum.SortOrder.LayoutOrder
-navLayout.Parent = nav
-
-local navPadding = Instance.new("UIPadding")
-navPadding.PaddingLeft = UDim.new(0, 8)
-navPadding.PaddingRight = UDim.new(0, 8)
-navPadding.PaddingTop = UDim.new(0, 10)
-navPadding.PaddingBottom = UDim.new(0, 10)
-navPadding.Parent = nav
-
-local navItems = {
-    {name = "公告", icon = "📢", accent = C_ACCENT2},
-    {name = "绘制", icon = "🎨", accent = C_ACCENT1},
-    {name = "自瞄", icon = "🎯", accent = C_ACCENT1},
-    {name = "子追", icon = "🔫", accent = C_ACCENT2},
-    {name = "功能", icon = "⚡", accent = C_ACCENT1},
-}
-
-local navBtns = {}
-local pages = {}
-local selectedIdx = 1
-
-for i, item in ipairs(navItems) do
-    local btn = Instance.new("TextButton")
-    btn.Name = item.name
-    btn.Size = UDim2.new(1, 0, 0, 56)
-    btn.BackgroundColor3 = (i == 1) and item.accent or C_BG_CARD
-    btn.BackgroundTransparency = (i == 1) and 0.3 or 0
-    btn.Text = item.icon
-    btn.TextColor3 = (i == 1) and C_WHITE or C_TEXT2
-    btn.TextSize = 22
-    btn.Font = Enum.Font.GothamBold
-    btn.BorderSizePixel = 0
-    btn.AutoButtonColor = false
-    btn.LayoutOrder = i
-    btn.ZIndex = 54
-    btn.Parent = nav
-
-    local btnC = Instance.new("UICorner")
-    btnC.CornerRadius = UDim.new(0, 14)
-    btnC.Parent = btn
-
-    local indicator = Instance.new("Frame")
-    indicator.Name = "Indicator"
-    indicator.Size = UDim2.new(0, 3, 0, 20)
-    indicator.Position = UDim2.new(0, 0, 0.5, -10)
-    indicator.BackgroundColor3 = item.accent
-    indicator.BorderSizePixel = 0
-    indicator.ZIndex = 55
-    indicator.Visible = (i == 1)
-    indicator.Parent = btn
-
-    local indC = Instance.new("UICorner")
-    indC.CornerRadius = UDim.new(0, 2)
-    indC.Parent = indicator
-
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, 0, 0, 14)
-    lbl.Position = UDim2.new(0, 0, 1, -15)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = item.name
-    lbl.TextColor3 = (i == 1) and C_WHITE or C_TEXT2
-    lbl.TextSize = 10
-    lbl.Font = Enum.Font.Gotham
-    lbl.ZIndex = 55
-    lbl.Parent = btn
-
-    btn.MouseEnter:Connect(function()
-        if selectedIdx ~= i then
-            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = C_GRAY}):Play()
-        end
-    end)
-    btn.MouseLeave:Connect(function()
-        if selectedIdx ~= i then
-            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = C_BG_CARD}):Play()
-        end
-    end)
-
-    navBtns[i] = btn
-end
-
-local content = Instance.new("Frame")
-content.Name = "Content"
-content.Size = UDim2.new(1 - NAV_RATIO - GAP, 0, 1, -BOTTOM_SAFE)
-content.Position = UDim2.new(NAV_RATIO + GAP, 0, 0, 0)
-content.BackgroundTransparency = 1
-content.ClipsDescendants = true
-content.ZIndex = 53
-content.Parent = body
-
--- ============================================================
---  美化版组件工厂
+--  浅蓝浅粉拼凑组件工厂
 -- ============================================================
 local function createToggle(parent, labelText, accentColor, onToggle)
     local row = Instance.new("Frame")
     row.Size = UDim2.new(1, 0, 0, 48)
-    row.BackgroundColor3 = C_BG_CARD
+    row.BackgroundColor3 = C_CARD
     row.BorderSizePixel = 0
     row.ZIndex = 56
     row.Parent = parent
 
     local rowC = Instance.new("UICorner")
-    rowC.CornerRadius = UDim.new(0, 12)
+    rowC.CornerRadius = UDim.new(0, 14)
     rowC.Parent = row
 
+    -- 彩色微边框
     local rowStroke = Instance.new("UIStroke")
-    rowStroke.Color = C_GRAY2
+    rowStroke.Color = accentColor
     rowStroke.Thickness = 1
-    rowStroke.Transparency = 0.8
+    rowStroke.Transparency = 0.25
     rowStroke.Parent = row
 
     local lbl = Instance.new("TextLabel")
@@ -522,12 +534,6 @@ local function createToggle(parent, labelText, accentColor, onToggle)
     toggleKnobC.CornerRadius = UDim.new(1, 0)
     toggleKnobC.Parent = toggleKnob
 
-    local toggleGlow = Instance.new("UIStroke")
-    toggleGlow.Color = accentColor
-    toggleGlow.Thickness = 0
-    toggleGlow.Transparency = 0.4
-    toggleGlow.Parent = toggleKnob
-
     local enabled = false
 
     toggleBg.MouseButton1Click:Connect(function()
@@ -535,13 +541,11 @@ local function createToggle(parent, labelText, accentColor, onToggle)
         if enabled then
             TweenService:Create(toggleBg, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundColor3 = accentColor}):Play()
             TweenService:Create(toggleKnob, TweenInfo.new(0.25, Enum.EasingStyle.Back), {Position = UDim2.new(0, 24, 0.5, -11)}):Play()
-            TweenService:Create(toggleGlow, TweenInfo.new(0.25), {Thickness = 3}):Play()
-            TweenService:Create(rowStroke, TweenInfo.new(0.25), {Color = accentColor, Transparency = 0.5}):Play()
+            TweenService:Create(rowStroke, TweenInfo.new(0.25), {Transparency = 0.55}):Play()
         else
             TweenService:Create(toggleBg, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundColor3 = C_GRAY}):Play()
             TweenService:Create(toggleKnob, TweenInfo.new(0.25, Enum.EasingStyle.Back), {Position = UDim2.new(0, 2, 0.5, -11)}):Play()
-            TweenService:Create(toggleGlow, TweenInfo.new(0.25), {Thickness = 0}):Play()
-            TweenService:Create(rowStroke, TweenInfo.new(0.25), {Color = C_GRAY2, Transparency = 0.8}):Play()
+            TweenService:Create(rowStroke, TweenInfo.new(0.25), {Transparency = 0.25}):Play()
         end
         if onToggle then onToggle(enabled) end
     end)
@@ -552,19 +556,19 @@ end
 local function createSlider(parent, labelText, accentColor, minVal, maxVal, defaultVal, onChange)
     local row = Instance.new("Frame")
     row.Size = UDim2.new(1, 0, 0, 64)
-    row.BackgroundColor3 = C_BG_CARD
+    row.BackgroundColor3 = C_CARD
     row.BorderSizePixel = 0
     row.ZIndex = 56
     row.Parent = parent
 
     local rowC = Instance.new("UICorner")
-    rowC.CornerRadius = UDim.new(0, 12)
+    rowC.CornerRadius = UDim.new(0, 14)
     rowC.Parent = row
 
     local rowStroke = Instance.new("UIStroke")
-    rowStroke.Color = C_GRAY2
+    rowStroke.Color = accentColor
     rowStroke.Thickness = 1
-    rowStroke.Transparency = 0.8
+    rowStroke.Transparency = 0.25
     rowStroke.Parent = row
 
     local lbl = Instance.new("TextLabel")
@@ -594,7 +598,7 @@ local function createSlider(parent, labelText, accentColor, minVal, maxVal, defa
     local track = Instance.new("Frame")
     track.Size = UDim2.new(1, -28, 0, 6)
     track.Position = UDim2.new(0, 14, 0, 38)
-    track.BackgroundColor3 = C_GRAY2
+    track.BackgroundColor3 = C_GRAY
     track.BorderSizePixel = 0
     track.ZIndex = 57
     track.Parent = row
@@ -632,12 +636,6 @@ local function createSlider(parent, labelText, accentColor, minVal, maxVal, defa
     knobStroke.Thickness = 2.5
     knobStroke.Parent = knob
 
-    local knobGlow = Instance.new("UIStroke")
-    knobGlow.Color = accentColor
-    knobGlow.Thickness = 0
-    knobGlow.Transparency = 0.3
-    knobGlow.Parent = knob
-
     local dragging = false
     local currentVal = defaultVal
 
@@ -649,7 +647,6 @@ local function createSlider(parent, labelText, accentColor, minVal, maxVal, defa
         valLbl.Text = tostring(currentVal)
         fill.Size = UDim2.new(rel, 0, 1, 0)
         knob.Position = UDim2.new(rel, -9, 0.5, -9)
-        TweenService:Create(knobGlow, TweenInfo.new(0.1), {Thickness = 4}):Play()
         if onChange then onChange(currentVal) end
     end
 
@@ -675,7 +672,6 @@ local function createSlider(parent, labelText, accentColor, minVal, maxVal, defa
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = false
-            TweenService:Create(knobGlow, TweenInfo.new(0.3), {Thickness = 0}):Play()
         end
     end)
 
@@ -685,19 +681,19 @@ end
 local function createDropdown(parent, labelText, accentColor, options, defaultIdx, onSelect)
     local row = Instance.new("Frame")
     row.Size = UDim2.new(1, 0, 0, 48)
-    row.BackgroundColor3 = C_BG_CARD
+    row.BackgroundColor3 = C_CARD
     row.BorderSizePixel = 0
     row.ZIndex = 56
     row.Parent = parent
 
     local rowC = Instance.new("UICorner")
-    rowC.CornerRadius = UDim.new(0, 12)
+    rowC.CornerRadius = UDim.new(0, 14)
     rowC.Parent = row
 
     local rowStroke = Instance.new("UIStroke")
-    rowStroke.Color = C_GRAY2
+    rowStroke.Color = accentColor
     rowStroke.Thickness = 1
-    rowStroke.Transparency = 0.8
+    rowStroke.Transparency = 0.25
     rowStroke.Parent = row
 
     local lbl = Instance.new("TextLabel")
@@ -715,9 +711,9 @@ local function createDropdown(parent, labelText, accentColor, options, defaultId
     local selBtn = Instance.new("TextButton")
     selBtn.Size = UDim2.new(0, 110, 0, 32)
     selBtn.Position = UDim2.new(1, -122, 0.5, -16)
-    selBtn.BackgroundColor3 = C_GRAY2
+    selBtn.BackgroundColor3 = accentColor
     selBtn.Text = options[defaultIdx] or options[1]
-    selBtn.TextColor3 = C_TEXT
+    selBtn.TextColor3 = C_WHITE
     selBtn.TextSize = 12
     selBtn.Font = Enum.Font.GothamBold
     selBtn.BorderSizePixel = 0
@@ -729,17 +725,11 @@ local function createDropdown(parent, labelText, accentColor, options, defaultId
     selC.CornerRadius = UDim.new(0, 8)
     selC.Parent = selBtn
 
-    local selStroke = Instance.new("UIStroke")
-    selStroke.Color = accentColor
-    selStroke.Thickness = 1
-    selStroke.Transparency = 0.5
-    selStroke.Parent = selBtn
-
     local dropdownOpen = false
     local dropdownFrame = Instance.new("Frame")
     dropdownFrame.Size = UDim2.new(0, 110, 0, 0)
     dropdownFrame.Position = UDim2.new(1, -122, 0, 42)
-    dropdownFrame.BackgroundColor3 = C_BG_CARD
+    dropdownFrame.BackgroundColor3 = C_CARD
     dropdownFrame.BorderSizePixel = 0
     dropdownFrame.ZIndex = 62
     dropdownFrame.Visible = false
@@ -770,7 +760,7 @@ local function createDropdown(parent, labelText, accentColor, options, defaultId
     for i, opt in ipairs(options) do
         local optBtn = Instance.new("TextButton")
         optBtn.Size = UDim2.new(1, 0, 0, 30)
-        optBtn.BackgroundColor3 = C_BG_PANEL
+        optBtn.BackgroundColor3 = C_BG
         optBtn.Text = opt
         optBtn.TextColor3 = C_TEXT
         optBtn.TextSize = 12
@@ -790,7 +780,7 @@ local function createDropdown(parent, labelText, accentColor, options, defaultId
             TweenService:Create(optBtn, TweenInfo.new(0.15), {TextColor3 = C_WHITE}):Play()
         end)
         optBtn.MouseLeave:Connect(function()
-            TweenService:Create(optBtn, TweenInfo.new(0.15), {BackgroundColor3 = C_BG_PANEL}):Play()
+            TweenService:Create(optBtn, TweenInfo.new(0.15), {BackgroundColor3 = C_BG}):Play()
             TweenService:Create(optBtn, TweenInfo.new(0.15), {TextColor3 = C_TEXT}):Play()
         end)
 
@@ -921,7 +911,7 @@ local function createNoticePage()
     page.Size = UDim2.new(1, 0, 1, 0)
     page.BackgroundTransparency = 1
     page.ScrollBarThickness = 4
-    page.ScrollBarImageColor3 = C_ACCENT2
+    page.ScrollBarImageColor3 = C_PINK3
     page.CanvasSize = UDim2.new(0, 0, 0, 0)
     page.AutomaticCanvasSize = Enum.AutomaticSize.None
     page.Visible = false
@@ -950,7 +940,7 @@ local function createNoticePage()
     local line = Instance.new("Frame")
     line.Size = UDim2.new(0, 40, 0, 3)
     line.Position = UDim2.new(0, 0, 0, 6)
-    line.BackgroundColor3 = C_ACCENT2
+    line.BackgroundColor3 = C_PINK3
     line.BorderSizePixel = 0
     line.ZIndex = 56
     line.Parent = headerRow
@@ -985,7 +975,7 @@ local function createNoticePage()
 
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, 0, 0, 300)
-    card.BackgroundColor3 = C_BG_CARD
+    card.BackgroundColor3 = C_CARD_PINK
     card.BorderSizePixel = 0
     card.LayoutOrder = 2
     card.ZIndex = 55
@@ -996,14 +986,14 @@ local function createNoticePage()
     cardC.Parent = card
 
     local cardStroke = Instance.new("UIStroke")
-    cardStroke.Color = C_ACCENT2
-    cardStroke.Thickness = 1
-    cardStroke.Transparency = 0.4
+    cardStroke.Color = C_PINK2
+    cardStroke.Thickness = 1.5
+    cardStroke.Transparency = 0.35
     cardStroke.Parent = card
 
     local cardTop = Instance.new("Frame")
-    cardTop.Size = UDim2.new(1, 0, 0, 3)
-    cardTop.BackgroundColor3 = C_ACCENT2
+    cardTop.Size = UDim2.new(1, 0, 0, 4)
+    cardTop.BackgroundColor3 = C_PINK3
     cardTop.BorderSizePixel = 0
     cardTop.ZIndex = 56
     cardTop.Parent = card
@@ -1016,7 +1006,7 @@ local function createNoticePage()
     noticeText.Size = UDim2.new(1, -24, 1, -24)
     noticeText.Position = UDim2.new(0, 12, 0, 12)
     noticeText.BackgroundTransparency = 1
-    noticeText.Text = "Ly枪战辅助  v29.0 美化版\n\n欢迎使用本脚本！\n\n本次更新：\n• UI全面升级为深色玻璃拟态风格\n• 新增霓虹渐变光效与动态边框\n• 优化开关、滑块、下拉框交互体验\n• ESP视野内方框改为蓝色，视野外为白色\n• 雷达系统视觉优化\n\n功能：\n• 高级绘制（方框/名字/血量/距离/透视）\n• 自瞄辅助（平滑/多条件优先）\n• 子弹追踪（预判/FOV）\n• 自动开枪 / 修改射速\n• 敌人传送 / 杀戮光环\n\n作者：林玉"
+    noticeText.Text = "Ly枪战辅助  v30.0 浅蓝浅粉版\n\n欢迎使用本脚本！\n\n本次更新：\n• UI全面升级为浅蓝浅粉清新风格\n• 顶部栏浅蓝背景配粉色装饰圆\n• 导航栏蓝粉交替卡片设计\n• 卡片彩色微边框 + 圆角\n• ESP视野内方框蓝色，视野外白色\n• 下拉框展开收起动画\n\n功能：\n• 高级绘制（方框/名字/血量/距离/透视）\n• 自瞄辅助（平滑/多条件优先）\n• 子弹追踪（预判/FOV）\n• 自动开枪 / 修改射速\n• 敌人传送 / 杀戮光环\n\n作者：林玉"
     noticeText.TextColor3 = C_TEXT
     noticeText.TextSize = 13
     noticeText.Font = Enum.Font.Gotham
@@ -1045,7 +1035,7 @@ local function switchPage(idx)
     if selectedIdx == idx then return end
 
     if navBtns[selectedIdx] then
-        TweenService:Create(navBtns[selectedIdx], TweenInfo.new(0.2), {BackgroundColor3 = C_BG_CARD}):Play()
+        TweenService:Create(navBtns[selectedIdx], TweenInfo.new(0.2), {BackgroundColor3 = C_CARD}):Play()
         TweenService:Create(navBtns[selectedIdx], TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
         local oldLbl = navBtns[selectedIdx]:FindFirstChildOfClass("TextLabel")
         if oldLbl then
@@ -1056,12 +1046,12 @@ local function switchPage(idx)
     end
 
     if not navBtns[idx] then return end
-    local newAccent = navItems[idx].accent
-    TweenService:Create(navBtns[idx], TweenInfo.new(0.2), {BackgroundColor3 = newAccent}):Play()
-    TweenService:Create(navBtns[idx], TweenInfo.new(0.2), {BackgroundTransparency = 0.3}):Play()
+    local newItem = navItems[idx]
+    TweenService:Create(navBtns[idx], TweenInfo.new(0.2), {BackgroundColor3 = newItem.bg}):Play()
+    TweenService:Create(navBtns[idx], TweenInfo.new(0.2), {BackgroundTransparency = 0.4}):Play()
     local newLbl = navBtns[idx]:FindFirstChildOfClass("TextLabel")
     if newLbl then
-        TweenService:Create(newLbl, TweenInfo.new(0.2), {TextColor3 = C_WHITE}):Play()
+        TweenService:Create(newLbl, TweenInfo.new(0.2), {TextColor3 = C_TEXT}):Play()
     end
     local newInd = navBtns[idx]:FindFirstChild("Indicator")
     if newInd then newInd.Visible = true end
@@ -1098,16 +1088,6 @@ local function openPanel()
         Size = UDim2.new(PANEL_W, 0, PANEL_H, 0),
         Position = UDim2.new(PANEL_X + PANEL_W/2, 0, PANEL_Y + PANEL_H/2, 0),
     }):Play()
-
-    spawn(function()
-        while panel.Visible and isOpen do
-            TweenService:Create(panelGlow, TweenInfo.new(1.2, Enum.EasingStyle.Sine), {Transparency = 0.3}):Play()
-            wait(1.2)
-            if not panel.Visible then break end
-            TweenService:Create(panelGlow, TweenInfo.new(1.2, Enum.EasingStyle.Sine), {Transparency = 0.7}):Play()
-            wait(1.2)
-        end
-    end)
 
     task.delay(0.5, function()
         if panel.Visible then
@@ -1231,7 +1211,7 @@ player.CharacterAdded:Connect(function()
 end)
 
 -- ============================================================
---  功能逻辑 — 保持原样，仅修改ESP颜色逻辑
+--  功能逻辑 — ESP颜色：视野内蓝色，视野外白色
 -- ============================================================
 local function IsVisible(targetPart)
     if not targetPart then return false end
@@ -1340,14 +1320,13 @@ local function UpdateESP2()
                         if onScreen and dist <= maxDist then
                             shouldHide = false
 
-                            -- 漏打检测：视野内=蓝色，视野外=白色（初始色）
                             local isVisible = true
                             if ESP2_Settings.VisCheck then
                                 local checkPart = head or hrp
                                 isVisible = IsVisible(checkPart)
                             end
 
-                            -- 颜色逻辑：视野内蓝色，视野外白色
+                            -- 视野内蓝色，视野外白色
                             local displayBoxColor = isVisible and C_VISIBLE or C_INVIS
                             local displayNameColor = isVisible and C_VISIBLE or C_TEXT
 
@@ -1441,7 +1420,7 @@ local function UpdateESP2()
         end)
 
         if not success then
-            -- 静默处理错误
+            -- 静默处理
         end
     end
 
@@ -1461,20 +1440,20 @@ local RadarElements = {
 }
 
 RadarElements.Background.Visible = false
-RadarElements.Background.Color = Color3.fromRGB(25, 25, 35)
+RadarElements.Background.Color = Color3.fromRGB(230, 240, 250)
 RadarElements.Background.Thickness = 1
-RadarElements.Background.Transparency = 0.6
+RadarElements.Background.Transparency = 0.5
 RadarElements.Background.Filled = true
 
 RadarElements.BackgroundCircle.Visible = false
-RadarElements.BackgroundCircle.Color = Color3.fromRGB(25, 25, 35)
+RadarElements.BackgroundCircle.Color = Color3.fromRGB(230, 240, 250)
 RadarElements.BackgroundCircle.Thickness = 1
-RadarElements.BackgroundCircle.Transparency = 0.6
+RadarElements.BackgroundCircle.Transparency = 0.5
 RadarElements.BackgroundCircle.Filled = true
 RadarElements.BackgroundCircle.NumSides = 64
 
 RadarElements.CenterDot.Visible = false
-RadarElements.CenterDot.Color = Color3.fromRGB(255, 255, 255)
+RadarElements.CenterDot.Color = Color3.fromRGB(100, 190, 235)
 RadarElements.CenterDot.Thickness = 1
 RadarElements.CenterDot.Transparency = 1
 RadarElements.CenterDot.Filled = true
@@ -1532,21 +1511,21 @@ local function updateRadar()
         RadarElements.BackgroundCircle.Visible = true
         RadarElements.BackgroundCircle.Position = Vector2.new(centerX, centerY)
         RadarElements.BackgroundCircle.Radius = radarSize / 2
-        RadarElements.BackgroundCircle.Color = Color3.fromRGB(25, 25, 35)
-        RadarElements.BackgroundCircle.Transparency = 0.6
+        RadarElements.BackgroundCircle.Color = Color3.fromRGB(230, 240, 250)
+        RadarElements.BackgroundCircle.Transparency = 0.5
     else
         RadarElements.BackgroundCircle.Visible = false
         RadarElements.Background.Visible = true
         RadarElements.Background.Size = Vector2.new(radarSize, radarSize)
         RadarElements.Background.Position = Vector2.new(posX, posY)
-        RadarElements.Background.Color = Color3.fromRGB(25, 25, 35)
-        RadarElements.Background.Transparency = 0.6
+        RadarElements.Background.Color = Color3.fromRGB(230, 240, 250)
+        RadarElements.Background.Transparency = 0.5
     end
 
     RadarElements.CenterDot.Visible = true
     RadarElements.CenterDot.Position = Vector2.new(centerX, centerY)
     RadarElements.CenterDot.Radius = 3
-    RadarElements.CenterDot.Color = Color3.fromRGB(255, 255, 255)
+    RadarElements.CenterDot.Color = Color3.fromRGB(100, 190, 235)
 
     local myPos = myHrp.Position
     local myLook = myHrp.CFrame.LookVector
@@ -1859,182 +1838,182 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ============================================================
---  页面 UI 创建
+--  页面 UI 创建 — 浅蓝浅粉交替
 -- ============================================================
-pages[2] = createFeaturePage("绘制", "绘制", "ESP 高级绘制设置", C_ACCENT1)
+pages[2] = createFeaturePage("绘制", "绘制", "ESP 高级绘制设置", C_SKY3)
 
-createToggle(pages[2].Container, "ESP 总开关", C_ACCENT1, function(v)
+createToggle(pages[2].Container, "ESP 总开关", C_SKY3, function(v)
     SetESP2Enabled(v)
 end).LayoutOrder = 1
 
-createToggle(pages[2].Container, "显示方框", C_ACCENT1, function(v)
+createToggle(pages[2].Container, "显示方框", C_SKY3, function(v)
     ESP2_Settings.ShowBox = v
 end).LayoutOrder = 2
 
-createToggle(pages[2].Container, "显示名字", C_ACCENT1, function(v)
+createToggle(pages[2].Container, "显示名字", C_SKY3, function(v)
     ESP2_Settings.ShowName = v
 end).LayoutOrder = 3
 
-createToggle(pages[2].Container, "显示距离", C_ACCENT1, function(v)
+createToggle(pages[2].Container, "显示距离", C_SKY3, function(v)
     ESP2_Settings.ShowDistance = v
 end).LayoutOrder = 4
 
-createToggle(pages[2].Container, "显示血量", C_ACCENT1, function(v)
+createToggle(pages[2].Container, "显示血量", C_SKY3, function(v)
     ESP2_Settings.ShowHealth = v
 end).LayoutOrder = 5
 
-createToggle(pages[2].Container, "上色透视", C_ACCENT1, function(v)
+createToggle(pages[2].Container, "上色透视", C_SKY3, function(v)
     ESP2_Settings.ShowChams = v
 end).LayoutOrder = 6
 
-createToggle(pages[2].Container, "漏打检测", C_ACCENT1, function(v)
+createToggle(pages[2].Container, "漏打检测", C_SKY3, function(v)
     ESP2_Settings.VisCheck = v
 end).LayoutOrder = 7
 
-createToggle(pages[2].Container, "队伍检测", C_ACCENT1, function(v)
+createToggle(pages[2].Container, "队伍检测", C_SKY3, function(v)
     ESP2_Settings.TeamCheck = v
 end).LayoutOrder = 8
 
-createSlider(pages[2].Container, "最大绘制距离", C_ACCENT1, 50, 5000, 5000, function(v)
+createSlider(pages[2].Container, "最大绘制距离", C_SKY3, 50, 5000, 5000, function(v)
     ESP2_Settings.MaxDistance = v
 end).LayoutOrder = 9
 
-createToggle(pages[2].Container, "显示雷达", C_ACCENT1, function(v)
+createToggle(pages[2].Container, "显示雷达", C_SKY3, function(v)
     ESP2_Settings.ShowRadar = v
 end).LayoutOrder = 10
 
-createDropdown(pages[2].Container, "雷达形状", C_ACCENT1, {"圆形", "方形"}, 1, function(v)
+createDropdown(pages[2].Container, "雷达形状", C_SKY3, {"圆形", "方形"}, 1, function(v)
     ESP2_Settings.RadarShape = v
 end).LayoutOrder = 11
 
-createSlider(pages[2].Container, "雷达大小", C_ACCENT1, 60, 200, 120, function(v)
+createSlider(pages[2].Container, "雷达大小", C_SKY3, 60, 200, 120, function(v)
     ESP2_Settings.RadarSize = v
 end).LayoutOrder = 12
 
-createSlider(pages[2].Container, "雷达范围", C_ACCENT1, 50, 500, 200, function(v)
+createSlider(pages[2].Container, "雷达范围", C_SKY3, 50, 500, 200, function(v)
     ESP2_Settings.RadarRange = v
 end).LayoutOrder = 13
 
-createSlider(pages[2].Container, "雷达X位置", C_ACCENT1, 50, 800, 150, function(v)
+createSlider(pages[2].Container, "雷达X位置", C_SKY3, 50, 800, 150, function(v)
     ESP2_Settings.RadarPosX = v
 end).LayoutOrder = 14
 
-createSlider(pages[2].Container, "雷达Y位置", C_ACCENT1, 50, 600, 150, function(v)
+createSlider(pages[2].Container, "雷达Y位置", C_SKY3, 50, 600, 150, function(v)
     ESP2_Settings.RadarPosY = v
 end).LayoutOrder = 15
 
-createDropdown(pages[2].Container, "可见颜色", C_ACCENT1, {"绿色", "红色", "蓝色", "黄色", "青色", "紫色", "橙色", "白色", "粉色"}, 1, function(v)
+createDropdown(pages[2].Container, "可见颜色", C_SKY3, {"绿色", "红色", "蓝色", "黄色", "青色", "紫色", "橙色", "白色", "粉色"}, 1, function(v)
     ESP2_Settings.RadarVisibleColor = v
 end).LayoutOrder = 16
 
-createDropdown(pages[2].Container, "不可见颜色", C_ACCENT1, {"红色", "绿色", "蓝色", "黄色", "青色", "紫色", "橙色", "白色", "粉色"}, 1, function(v)
+createDropdown(pages[2].Container, "不可见颜色", C_SKY3, {"红色", "绿色", "蓝色", "黄色", "青色", "紫色", "橙色", "白色", "粉色"}, 1, function(v)
     ESP2_Settings.RadarHiddenColor = v
 end).LayoutOrder = 17
 
-pages[3] = createFeaturePage("自瞄", "自瞄", "自瞄功能详细设置", C_ACCENT2)
+pages[3] = createFeaturePage("自瞄", "自瞄", "自瞄功能详细设置", C_PINK3)
 
-createToggle(pages[3].Container, "启用自瞄", C_ACCENT2, function(v)
+createToggle(pages[3].Container, "启用自瞄", C_PINK3, function(v)
     AimConfig.Enabled = v
     FOV_Circle.Visible = v
 end).LayoutOrder = 1
 
-createToggle(pages[3].Container, "漏打检测", C_ACCENT2, function(v)
+createToggle(pages[3].Container, "漏打检测", C_PINK3, function(v)
     AimConfig.VisCheck = v
 end).LayoutOrder = 2
 
-createToggle(pages[3].Container, "队伍检测", C_ACCENT2, function(v)
+createToggle(pages[3].Container, "队伍检测", C_PINK3, function(v)
     AimConfig.TeamCheck = v
 end).LayoutOrder = 3
 
-createSlider(pages[3].Container, "自瞄范围", C_ACCENT2, 50, 400, 150, function(v)
+createSlider(pages[3].Container, "自瞄范围", C_PINK3, 50, 400, 150, function(v)
     AimConfig.FOV = v
 end).LayoutOrder = 4
 
-createSlider(pages[3].Container, "自瞄距离", C_ACCENT2, 100, 2000, 500, function(v)
+createSlider(pages[3].Container, "自瞄距离", C_PINK3, 100, 2000, 500, function(v)
     AimConfig.Distance = v
 end).LayoutOrder = 5
 
-createSlider(pages[3].Container, "自瞄速度", C_ACCENT2, 1, 30, 5, function(v)
+createSlider(pages[3].Container, "自瞄速度", C_PINK3, 1, 30, 5, function(v)
     AimConfig.Speed = v
 end).LayoutOrder = 6
 
-createSlider(pages[3].Container, "平滑度", C_ACCENT2, 1, 20, 5, function(v)
+createSlider(pages[3].Container, "平滑度", C_PINK3, 1, 20, 5, function(v)
     AimConfig.Smoothness = v
 end).LayoutOrder = 7
 
-createDropdown(pages[3].Container, "优先条件", C_ACCENT2, {"FOV距离", "世界距离", "综合评分", "血量优先"}, 1, function(v)
+createDropdown(pages[3].Container, "优先条件", C_PINK3, {"FOV距离", "世界距离", "综合评分", "血量优先"}, 1, function(v)
     AimConfig.Priority = v
 end).LayoutOrder = 8
 
-createDropdown(pages[3].Container, "瞄准部位", C_ACCENT2, {"Head", "HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso"}, 1, function(v)
+createDropdown(pages[3].Container, "瞄准部位", C_PINK3, {"Head", "HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso"}, 1, function(v)
     AimConfig.TargetPart = v
 end).LayoutOrder = 9
 
-pages[4] = createFeaturePage("子追", "子弹追踪", "子弹追踪功能设置", C_ACCENT1)
+pages[4] = createFeaturePage("子追", "子弹追踪", "子弹追踪功能设置", C_SKY3)
 
-createToggle(pages[4].Container, "启用子弹追踪", C_ACCENT1, function(v)
+createToggle(pages[4].Container, "启用子弹追踪", C_SKY3, function(v)
     BulletConfig.Enabled = v
 end).LayoutOrder = 1
 
-createSlider(pages[4].Container, "追踪角度范围", C_ACCENT1, 10, 180, 60, function(v)
+createSlider(pages[4].Container, "追踪角度范围", C_SKY3, 10, 180, 60, function(v)
     BulletConfig.FOV = v
 end).LayoutOrder = 2
 
-createDropdown(pages[4].Container, "优先条件", C_ACCENT1, {"FOV优先", "距离优先", "综合评分"}, 1, function(v)
+createDropdown(pages[4].Container, "优先条件", C_SKY3, {"FOV优先", "距离优先", "综合评分"}, 1, function(v)
     BulletConfig.Priority = v
 end).LayoutOrder = 3
 
-createToggle(pages[4].Container, "启用预判", C_ACCENT1, function(v)
+createToggle(pages[4].Container, "启用预判", C_SKY3, function(v)
     BulletConfig.Prediction = v
 end).LayoutOrder = 4
 
-createSlider(pages[4].Container, "预判系数", C_ACCENT1, 5, 50, 15, function(v)
+createSlider(pages[4].Container, "预判系数", C_SKY3, 5, 50, 15, function(v)
     BulletConfig.PredictionFactor = v / 100
 end).LayoutOrder = 5
 
-pages[5] = createFeaturePage("功能", "功能", "通用功能设置", C_ACCENT2)
+pages[5] = createFeaturePage("功能", "功能", "通用功能设置", C_PINK3)
 
-createToggle(pages[5].Container, "自动开枪", C_ACCENT2, function(v)
+createToggle(pages[5].Container, "自动开枪", C_PINK3, function(v)
     MiscConfig.AutoFire = v
 end).LayoutOrder = 1
 
-createSlider(pages[5].Container, "自动开枪范围", C_ACCENT2, 50, 500, 200, function(v)
+createSlider(pages[5].Container, "自动开枪范围", C_PINK3, 50, 500, 200, function(v)
     MiscConfig.AutoFireRange = v
 end).LayoutOrder = 2
 
-createSlider(pages[5].Container, "开枪间隔(秒)", C_ACCENT2, 1, 20, 10, function(v)
+createSlider(pages[5].Container, "开枪间隔(秒)", C_PINK3, 1, 20, 10, function(v)
     MiscConfig.AutoFireDelay = v / 100
 end).LayoutOrder = 3
 
-createToggle(pages[5].Container, "修改射速", C_ACCENT2, function(v)
+createToggle(pages[5].Container, "修改射速", C_PINK3, function(v)
     MiscConfig.FireRate = v
 end).LayoutOrder = 4
 
-createSlider(pages[5].Container, "射速间隔(秒)", C_ACCENT2, 1, 20, 5, function(v)
+createSlider(pages[5].Container, "射速间隔(秒)", C_PINK3, 1, 20, 5, function(v)
     MiscConfig.FireRateValue = v / 100
 end).LayoutOrder = 5
 
-createToggle(pages[5].Container, "敌人传送面前", C_ACCENT2, function(v)
+createToggle(pages[5].Container, "敌人传送面前", C_PINK3, function(v)
     MiscConfig.TeleportEnemies = v
 end).LayoutOrder = 6
 
-createSlider(pages[5].Container, "传送距离", C_ACCENT2, 1, 30, 5, function(v)
+createSlider(pages[5].Container, "传送距离", C_PINK3, 1, 30, 5, function(v)
     MiscConfig.TeleportDistance = v
 end).LayoutOrder = 7
 
-createToggle(pages[5].Container, "杀戮光环", C_ACCENT2, function(v)
+createToggle(pages[5].Container, "杀戮光环", C_PINK3, function(v)
     MiscConfig.KillAura = v
 end).LayoutOrder = 8
 
-createSlider(pages[5].Container, "光环范围", C_ACCENT2, 1, 100, 50, function(v)
+createSlider(pages[5].Container, "光环范围", C_PINK3, 1, 100, 50, function(v)
     MiscConfig.KillAuraRange = v
 end).LayoutOrder = 9
 
-createDropdown(pages[5].Container, "优先条件", C_ACCENT2, {"距离优先", "血量优先", "视角优先"}, 1, function(v)
+createDropdown(pages[5].Container, "优先条件", C_PINK3, {"距离优先", "血量优先", "视角优先"}, 1, function(v)
     MiscConfig.KillAuraPriority = v
 end).LayoutOrder = 10
 
-createToggle(pages[5].Container, "持续锁定", C_ACCENT2, function(v)
+createToggle(pages[5].Container, "持续锁定", C_PINK3, function(v)
     MiscConfig.KillAuraLock = v
 end).LayoutOrder = 11
 
