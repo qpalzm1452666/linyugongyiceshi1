@@ -75,16 +75,7 @@ local AimConfig = {
     Smoothness = 5,
 }
 
-local SilentAimConfig = {
-    Enabled = false,
-    FOV = 150,
-    Distance = 500,
-    Priority = "FOV距离",
-    CircleColor = Color3.fromRGB(0, 255, 100),
-    VisCheck = true,
-    TargetPart = "Head",
-    TeamCheck = false,
-}
+
 
 local BulletConfig = {
     Enabled = false,
@@ -105,6 +96,7 @@ local MiscConfig = {
     KillAura = false,
     KillAuraRange = 50,
     KillAuraPriority = "距离优先",
+    KillAuraLock = false,
 }
 
 local FOV_Circle = Drawing.new("Circle")
@@ -115,13 +107,7 @@ FOV_Circle.Transparency = 0.7
 FOV_Circle.Filled = false
 FOV_Circle.NumSides = 64
 
-local SilentFOV_Circle = Drawing.new("Circle")
-SilentFOV_Circle.Visible = false
-SilentFOV_Circle.Thickness = 2
-SilentFOV_Circle.Color = SilentAimConfig.CircleColor
-SilentFOV_Circle.Transparency = 0.7
-SilentFOV_Circle.Filled = false
-SilentFOV_Circle.NumSides = 64
+
 
 local BulletFOV_Circle = Drawing.new("Circle")
 BulletFOV_Circle.Visible = false
@@ -141,51 +127,40 @@ ui.Name = "Ly枪战辅助"
 ui.ResetOnSpawn = false
 ui.Parent = playerGui
 
-local orb = Instance.new("Frame")
+local orb = Instance.new("TextButton")
 orb.Name = "Orb"
-orb.Size = UDim2.new(0, 52, 0, 52)
-orb.Position = UDim2.new(1, -68, 1, -68)
+orb.Size = UDim2.new(0, 48, 0, 48)
+orb.Position = UDim2.new(1, -64, 1, -64)
 orb.BackgroundColor3 = C_BLUE
 orb.BorderSizePixel = 0
+orb.Text = "Ly"
+orb.TextColor3 = C_WHITE
+orb.TextSize = 16
+orb.Font = Enum.Font.GothamBold
 orb.ZIndex = 100
+orb.AutoButtonColor = false
 orb.Parent = ui
 
 local orbCorner = Instance.new("UICorner")
 orbCorner.CornerRadius = UDim.new(1, 0)
 orbCorner.Parent = orb
 
-local orbLabel = Instance.new("TextLabel")
-orbLabel.Size = UDim2.new(1, 0, 1, 0)
-orbLabel.BackgroundTransparency = 1
-orbLabel.Text = "Ly"
-orbLabel.TextColor3 = C_WHITE
-orbLabel.TextSize = 18
-orbLabel.Font = Enum.Font.GothamBold
-orbLabel.ZIndex = 101
-orbLabel.Parent = orb
-
-local orbShadow = Instance.new("Frame")
-orbShadow.Size = UDim2.new(1, 8, 1, 8)
-orbShadow.Position = UDim2.new(0, -4, 0, -4)
-orbShadow.BackgroundColor3 = C_PINK2
-orbShadow.BorderSizePixel = 0
-orbShadow.ZIndex = 99
-orbShadow.Parent = orb
-
-local orbShadowCorner = Instance.new("UICorner")
-orbShadowCorner.CornerRadius = UDim.new(1, 0)
-orbShadowCorner.Parent = orbShadow
+local orbStroke = Instance.new("UIStroke")
+orbStroke.Color = C_PINK
+orbStroke.Thickness = 2
+orbStroke.Transparency = 0.5
+orbStroke.Parent = orb
 
 spawn(function()
     while orb.Parent do
         if not orb.Visible then break end
-        TweenService:Create(orb, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
-            {Size = UDim2.new(0, 58, 0, 58)}):Play()
-        wait(1.2)
+        TweenService:Create(orbStroke, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+            {Transparency = 0.2}):Play()
+        wait(1.5)
         if not orb.Parent then break end
-        TweenService:Create(orb, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
-            {Size = UDim2.new(0, 52, 0, 52)}):Play()
-        wait(1.2)
+        TweenService:Create(orbStroke, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+            {Transparency = 0.6}):Play()
+        wait(1.5)
     end
 end)
 
@@ -327,7 +302,6 @@ local navItems = {
     {name = "公告", icon = "📢"},
     {name = "绘制", icon = "🎨"},
     {name = "自瞄", icon = "🎯"},
-    {name = "静默", icon = "🤫"},
     {name = "子追", icon = "🔫"},
     {name = "功能", icon = "⚡"},
 }
@@ -700,27 +674,27 @@ local function createFeaturePage(name, title, desc, accent)
     page.Name = name
     page.Size = UDim2.new(1, 0, 1, 0)
     page.BackgroundTransparency = 1
-    page.ScrollBarThickness = 4
+    page.ScrollBarThickness = 3
     page.ScrollBarImageColor3 = accent
-    page.CanvasSize = UDim2.new(0, 0, 0, 500)
+    page.CanvasSize = UDim2.new(0, 0, 0, 600)
     page.Visible = false
     page.ZIndex = 53
     page.Parent = content
 
     local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 6)
+    layout.Padding = UDim.new(0, 8)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Parent = page
 
     local padding = Instance.new("UIPadding")
-    padding.PaddingLeft = UDim.new(0, 6)
-    padding.PaddingRight = UDim.new(0, 6)
-    padding.PaddingTop = UDim.new(0, 10)
-    padding.PaddingBottom = UDim.new(0, 10)
+    padding.PaddingLeft = UDim.new(0, 10)
+    padding.PaddingRight = UDim.new(0, 10)
+    padding.PaddingTop = UDim.new(0, 12)
+    padding.PaddingBottom = UDim.new(0, 12)
     padding.Parent = page
 
     local line = Instance.new("Frame")
-    line.Size = UDim2.new(0, 40, 0, 3)
+    line.Size = UDim2.new(0, 32, 0, 3)
     line.BackgroundColor3 = accent
     line.BorderSizePixel = 0
     line.LayoutOrder = 1
@@ -732,11 +706,11 @@ local function createFeaturePage(name, title, desc, accent)
     lineC.Parent = line
 
     local t = Instance.new("TextLabel")
-    t.Size = UDim2.new(1, 0, 0, 26)
+    t.Size = UDim2.new(1, 0, 0, 28)
     t.BackgroundTransparency = 1
     t.Text = title
     t.TextColor3 = C_TEXT
-    t.TextSize = 20
+    t.TextSize = 18
     t.Font = Enum.Font.GothamBold
     t.TextXAlignment = Enum.TextXAlignment.Left
     t.LayoutOrder = 2
@@ -744,11 +718,11 @@ local function createFeaturePage(name, title, desc, accent)
     t.Parent = page
 
     local d = Instance.new("TextLabel")
-    d.Size = UDim2.new(1, 0, 0, 18)
+    d.Size = UDim2.new(1, 0, 0, 16)
     d.BackgroundTransparency = 1
     d.Text = desc
     d.TextColor3 = C_TEXT2
-    d.TextSize = 12
+    d.TextSize = 11
     d.Font = Enum.Font.Gotham
     d.TextXAlignment = Enum.TextXAlignment.Left
     d.LayoutOrder = 3
@@ -764,24 +738,17 @@ local function createFeaturePage(name, title, desc, accent)
     container.Parent = page
 
     local containerLayout = Instance.new("UIListLayout")
-    containerLayout.Padding = UDim.new(0, 6)
+    containerLayout.Padding = UDim.new(0, 8)
     containerLayout.SortOrder = Enum.SortOrder.LayoutOrder
     containerLayout.Parent = container
 
     local function updateCanvas()
-        local containerH = containerLayout.AbsoluteContentSize.Y
-        container.Size = UDim2.new(1, 0, 0, containerH)
-        local totalH = layout.AbsoluteContentSize.Y + 20
-        page.CanvasSize = UDim2.new(0, 0, 0, math.max(totalH, 1))
+        container.Size = UDim2.new(1, 0, 0, containerLayout.AbsoluteContentSize.Y)
+        page.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 24)
     end
-
-    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        task.defer(updateCanvas)
-    end)
-    containerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        task.defer(updateCanvas)
-    end)
-    task.defer(updateCanvas)
+    containerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
+    task.delay(0.1, updateCanvas)
 
     return page
 end
@@ -896,32 +863,20 @@ pages[1].Visible = true
 
 local function switchPage(idx)
     if selectedIdx == idx then
-        local color = randomAccent()
-        navBtns[idx].BackgroundColor3 = color
+        navBtns[idx].BackgroundColor3 = math.random() > 0.5 and C_BLUE or C_PINK
         return
     end
-
-    local oldBtn = navBtns[selectedIdx]
-    if oldBtn then oldBtn.BackgroundColor3 = C_WHITE end
-
-    local newBtn = navBtns[idx]
-    if not newBtn then return end
-    local color = randomAccent()
-    newBtn.BackgroundColor3 = color
-
-    if pages[selectedIdx] then
-        pages[selectedIdx].Visible = false
-    end
-
+    if navBtns[selectedIdx] then navBtns[selectedIdx].BackgroundColor3 = C_WHITE end
+    if not navBtns[idx] then return end
+    navBtns[idx].BackgroundColor3 = math.random() > 0.5 and C_BLUE or C_PINK
+    if pages[selectedIdx] then pages[selectedIdx].Visible = false end
     if pages[idx] then
-        local newPage = pages[idx]
-        newPage.Visible = true
-        newPage.Position = UDim2.new(0.04, 0, 0, 0)
-        TweenService:Create(newPage, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+        pages[idx].Visible = true
+        pages[idx].Position = UDim2.new(0.06, 0, 0, 0)
+        TweenService:Create(pages[idx], TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
             Position = UDim2.new(0, 0, 0, 0),
         }):Play()
     end
-
     selectedIdx = idx
 end
 
@@ -937,11 +892,10 @@ local function openPanel()
     isOpen = true
     orb.Visible = false
     panel.Visible = true
-
     panel.Size = UDim2.new(0, 0, 0, 0)
     panel.Position = UDim2.new(1, -68, 1, -68)
 
-    TweenService:Create(panel, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    TweenService:Create(panel, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Size = UDim2.new(PANEL_W, 0, PANEL_H, 0),
         Position = UDim2.new(PANEL_X, 0, PANEL_Y, 0),
     }):Play()
@@ -949,13 +903,11 @@ end
 
 local function closePanel()
     isOpen = false
-
-    TweenService:Create(panel, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+    TweenService:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
         Size = UDim2.new(0, 0, 0, 0),
         Position = UDim2.new(1, -68, 1, -68),
     }):Play()
-
-    wait(0.25)
+    task.wait(0.3)
     panel.Visible = false
     orb.Visible = true
 end
@@ -1559,54 +1511,7 @@ local function getClosestHead()
     return bestHead
 end
 
-local function getSilentAimTarget()
-    local bestTarget = nil
-    local bestScore = math.huge
-    local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    local myHrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    local myPos = myHrp and myHrp.Position or Camera.CFrame.Position
 
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr == player or not plr.Character then continue end
-        local char = plr.Character
-        local targetPart = char:FindFirstChild(SilentAimConfig.TargetPart)
-        if not targetPart then continue end
-
-        local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
-        if not onScreen then continue end
-
-        local distToCenter = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
-        if distToCenter > SilentAimConfig.FOV then continue end
-
-        local worldDist = (targetPart.Position - myPos).Magnitude
-        if worldDist > SilentAimConfig.Distance then continue end
-
-        if SilentAimConfig.TeamCheck and plr.Team == player.Team and player.Team ~= nil then continue end
-        if SilentAimConfig.VisCheck and not IsVisible(targetPart) then continue end
-
-        local score
-        if SilentAimConfig.Priority == "FOV距离" then
-            score = distToCenter
-        elseif SilentAimConfig.Priority == "世界距离" then
-            score = worldDist
-        elseif SilentAimConfig.Priority == "综合评分" then
-            score = distToCenter * 0.7 + worldDist * 0.3
-        elseif SilentAimConfig.Priority == "血量优先" then
-            local hum = char:FindFirstChild("Humanoid")
-            local hp = hum and hum.Health or 100
-            score = distToCenter * 0.5 + hp * 0.5
-        else
-            score = distToCenter
-        end
-
-        if score < bestScore then
-            bestScore = score
-            bestTarget = targetPart
-        end
-    end
-
-    return bestTarget
-end
 
 local oldHook
 local success, err = pcall(function()
@@ -1653,40 +1558,6 @@ local success, err = pcall(function()
     end)
 end)
 
--- 静默自瞄：用 hookfunction 稳定 hook workspace.Raycast
-local oldRaycast = nil
-local oldFindPartOnRay = nil
-
-local function setupSilentAimHooks()
-    if oldRaycast then return end
-
-    oldRaycast = hookfunction(Workspace.Raycast, function(self, origin, direction, ...)
-        if SilentAimConfig.Enabled and self == Workspace then
-            local silentTarget = getSilentAimTarget()
-            if silentTarget then
-                local targetPos = silentTarget.Position
-                local newDirection = (targetPos - origin).Unit * direction.Magnitude
-                return oldRaycast(self, origin, newDirection, ...)
-            end
-        end
-        return oldRaycast(self, origin, direction, ...)
-    end)
-
-    oldFindPartOnRay = hookfunction(Workspace.FindPartOnRay, function(self, ray, ...)
-        if SilentAimConfig.Enabled and self == Workspace and typeof(ray) == "Ray" then
-            local silentTarget = getSilentAimTarget()
-            if silentTarget then
-                local targetPos = silentTarget.Position
-                local newDirection = (targetPos - ray.Origin).Unit * ray.Direction.Magnitude
-                return oldFindPartOnRay(self, Ray.new(ray.Origin, newDirection), ...)
-            end
-        end
-        return oldFindPartOnRay(self, ray, ...)
-    end)
-end
-
-pcall(setupSilentAimHooks)
-
 local BulletTargetText = Drawing.new("Text")
 BulletTargetText.Visible = false
 BulletTargetText.Size = 13
@@ -1702,10 +1573,6 @@ RunService.RenderStepped:Connect(function()
     BulletFOV_Circle.Visible = BulletConfig.Enabled
     BulletFOV_Circle.Radius = BulletConfig.FOV
     BulletFOV_Circle.Position = screenCenter
-
-    SilentFOV_Circle.Visible = SilentAimConfig.Enabled
-    SilentFOV_Circle.Radius = SilentAimConfig.FOV
-    SilentFOV_Circle.Position = screenCenter
 
     -- 显示当前追踪目标名字
     if BulletConfig.Enabled then
@@ -1835,100 +1702,73 @@ createDropdown(pages[3].Container, "瞄准部位", C_BLUE, {"Head", "HumanoidRoo
     AimConfig.TargetPart = v
 end).LayoutOrder = 9
 
-pages[4] = createFeaturePage("静默", "静默自瞄", "不动视野的自动瞄准", C_PINK)
+pages[4] = createFeaturePage("子追", "子弹追踪", "子弹追踪功能设置", C_PINK)
 
-createToggle(pages[4].Container, "启用静默自瞄", C_PINK, function(v)
-    SilentAimConfig.Enabled = v
-    SilentFOV_Circle.Visible = v
-end).LayoutOrder = 1
-
-createToggle(pages[4].Container, "漏打检测", C_PINK, function(v)
-    SilentAimConfig.VisCheck = v
-end).LayoutOrder = 2
-
-createToggle(pages[4].Container, "队伍检测", C_PINK, function(v)
-    SilentAimConfig.TeamCheck = v
-end).LayoutOrder = 3
-
-createSlider(pages[4].Container, "静默范围", C_PINK, 50, 400, 150, function(v)
-    SilentAimConfig.FOV = v
-end).LayoutOrder = 4
-
-createSlider(pages[4].Container, "静默距离", C_PINK, 100, 2000, 500, function(v)
-    SilentAimConfig.Distance = v
-end).LayoutOrder = 5
-
-createDropdown(pages[6].Container, "优先条件", C_PINK, {"FOV距离", "世界距离", "综合评分", "血量优先"}, 1, function(v)
-    SilentAimConfig.Priority = v
-end).LayoutOrder = 6
-
-createDropdown(pages[4].Container, "瞄准部位", C_PINK, {"Head", "HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso"}, 1, function(v)
-    SilentAimConfig.TargetPart = v
-end).LayoutOrder = 7
-
-pages[5] = createFeaturePage("子追", "子弹追踪", "子弹追踪功能设置", C_PINK)
-
-createToggle(pages[5].Container, "启用子弹追踪", C_PINK, function(v)
+createToggle(pages[4].Container, "启用子弹追踪", C_PINK, function(v)
     BulletConfig.Enabled = v
 end).LayoutOrder = 1
 
-createSlider(pages[5].Container, "追踪角度范围", C_PINK, 10, 180, 60, function(v)
+createSlider(pages[4].Container, "追踪角度范围", C_PINK, 10, 180, 60, function(v)
     BulletConfig.FOV = v
 end).LayoutOrder = 2
 
-createDropdown(pages[5].Container, "优先条件", C_PINK, {"FOV优先", "距离优先", "综合评分"}, 1, function(v)
+createDropdown(pages[4].Container, "优先条件", C_PINK, {"FOV优先", "距离优先", "综合评分"}, 1, function(v)
     BulletConfig.Priority = v
 end).LayoutOrder = 3
 
-createToggle(pages[5].Container, "启用预判", C_PINK, function(v)
+createToggle(pages[4].Container, "启用预判", C_PINK, function(v)
     BulletConfig.Prediction = v
 end).LayoutOrder = 4
 
-createSlider(pages[5].Container, "预判系数", C_PINK, 5, 50, 15, function(v)
+createSlider(pages[4].Container, "预判系数", C_PINK, 5, 50, 15, function(v)
     BulletConfig.PredictionFactor = v / 100
 end).LayoutOrder = 5
 
-pages[6] = createFeaturePage("功能", "功能", "通用功能设置", C_BLUE)
+pages[5] = createFeaturePage("功能", "功能", "通用功能设置", C_BLUE)
 
-createToggle(pages[6].Container, "自动开枪", C_BLUE, function(v)
+createToggle(pages[5].Container, "自动开枪", C_BLUE, function(v)
     MiscConfig.AutoFire = v
 end).LayoutOrder = 1
 
-createSlider(pages[6].Container, "自动开枪范围", C_BLUE, 50, 500, 200, function(v)
+createSlider(pages[5].Container, "自动开枪范围", C_BLUE, 50, 500, 200, function(v)
     MiscConfig.AutoFireRange = v
 end).LayoutOrder = 2
 
-createSlider(pages[6].Container, "开枪间隔(秒)", C_BLUE, 1, 20, 10, function(v)
+createSlider(pages[5].Container, "开枪间隔(秒)", C_BLUE, 1, 20, 10, function(v)
     MiscConfig.AutoFireDelay = v / 100
 end).LayoutOrder = 3
 
-createToggle(pages[6].Container, "修改射速", C_BLUE, function(v)
+createToggle(pages[5].Container, "修改射速", C_BLUE, function(v)
     MiscConfig.FireRate = v
 end).LayoutOrder = 4
 
-createSlider(pages[6].Container, "射速间隔(秒)", C_BLUE, 1, 20, 5, function(v)
+createSlider(pages[5].Container, "射速间隔(秒)", C_BLUE, 1, 20, 5, function(v)
     MiscConfig.FireRateValue = v / 100
 end).LayoutOrder = 5
 
-createToggle(pages[6].Container, "敌人传送面前", C_BLUE, function(v)
+createToggle(pages[5].Container, "敌人传送面前", C_BLUE, function(v)
     MiscConfig.TeleportEnemies = v
 end).LayoutOrder = 6
 
-createSlider(pages[6].Container, "传送距离", C_BLUE, 1, 30, 5, function(v)
+createSlider(pages[5].Container, "传送距离", C_BLUE, 1, 30, 5, function(v)
     MiscConfig.TeleportDistance = v
 end).LayoutOrder = 7
 
-createToggle(pages[6].Container, "杀戮光环", C_BLUE, function(v)
+createToggle(pages[5].Container, "杀戮光环", C_BLUE, function(v)
     MiscConfig.KillAura = v
 end).LayoutOrder = 8
 
-createSlider(pages[6].Container, "光环范围", C_BLUE, 1, 100, 50, function(v)
+createSlider(pages[5].Container, "光环范围", C_BLUE, 1, 100, 50, function(v)
     MiscConfig.KillAuraRange = v
 end).LayoutOrder = 9
 
-createDropdown(pages[6].Container, "优先条件", C_BLUE, {"距离优先", "血量优先", "视角优先"}, 1, function(v)
+createDropdown(pages[5].Container, "优先条件", C_BLUE, {"距离优先", "血量优先", "视角优先"}, 1, function(v)
     MiscConfig.KillAuraPriority = v
 end).LayoutOrder = 10
+
+createToggle(pages[5].Container, "持续锁定", C_BLUE, function(v)
+    MiscConfig.KillAuraLock = v
+end).LayoutOrder = 11
 
 
 RunService.Heartbeat:Connect(function()
@@ -2216,10 +2056,12 @@ end
 -- 范围内有可见敌人时，自动将视角转向最近敌人并开火
 
 local killAuraRunning = false
+local lockedTarget = nil
 
 local function killAuraLoop()
     if killAuraRunning then return end
     killAuraRunning = true
+    lockedTarget = nil
 
     while MiscConfig.KillAura do
         local myChar = player.Character
@@ -2235,48 +2077,69 @@ local function killAuraLoop()
         local bestTarget = nil
         local bestScore = math.huge
 
-        -- 全方位扫描：不限于屏幕中心，而是周围所有方向
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player and plr.Character then
-                local char = plr.Character
-                local head = char:FindFirstChild("Head")
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
-
-                if head and humanoid and humanoid.Health > 0 then
-                    local dist = (head.Position - myPos).Magnitude
-                    if dist <= range then
-                        -- 漏打检测
-                        if IsVisible(head) then
-                            local score
-                            local priority = MiscConfig.KillAuraPriority
-
-                            if priority == "距离优先" then
-                                score = dist
-                            elseif priority == "血量优先" then
-                                score = humanoid.Health
-                            elseif priority == "视角优先" then
-                                local toTarget = (head.Position - cameraPos).Unit
-                                local angle = math.deg(math.acos(math.clamp(cameraDir:Dot(toTarget), -1, 1)))
-                                score = angle
-                            else
-                                score = dist
-                            end
-
-                            if score < bestScore then
-                                bestScore = score
+        if MiscConfig.KillAuraLock and lockedTarget then
+            local stillValid = false
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= player and plr.Character then
+                    local char = plr.Character
+                    local head = char:FindFirstChild("Head")
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    if head and humanoid and humanoid.Health > 0 then
+                        if head == lockedTarget or (head.Position - lockedTarget.Position).Magnitude < 0.1 then
+                            if (head.Position - myPos).Magnitude <= range and IsVisible(head) then
                                 bestTarget = head
+                                stillValid = true
+                            end
+                            break
+                        end
+                    end
+                end
+            end
+            if not stillValid then lockedTarget = nil end
+        end
+
+        if not bestTarget then
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= player and plr.Character then
+                    local char = plr.Character
+                    local head = char:FindFirstChild("Head")
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+
+                    if head and humanoid and humanoid.Health > 0 then
+                        local dist = (head.Position - myPos).Magnitude
+                        if dist <= range then
+                            if IsVisible(head) then
+                                local score
+                                local priority = MiscConfig.KillAuraPriority
+
+                                if priority == "距离优先" then
+                                    score = dist
+                                elseif priority == "血量优先" then
+                                    score = humanoid.Health
+                                elseif priority == "视角优先" then
+                                    local toTarget = (head.Position - cameraPos).Unit
+                                    local angle = math.deg(math.acos(math.clamp(cameraDir:Dot(toTarget), -1, 1)))
+                                    score = angle
+                                else
+                                    score = dist
+                                end
+
+                                if score < bestScore then
+                                    bestScore = score
+                                    bestTarget = head
+                                end
                             end
                         end
                     end
                 end
             end
+            if bestTarget and MiscConfig.KillAuraLock then
+                lockedTarget = bestTarget
+            end
         end
 
         if bestTarget then
-            -- 瞬间锁定视角朝向目标
             Camera.CFrame = CFrame.new(Camera.CFrame.Position, bestTarget.Position)
-
-            -- 自动开火
             VirtualUser:Button1Down(Vector2.new(0, 0))
             VirtualUser:Button1Up(Vector2.new(0, 0))
         end
@@ -2285,6 +2148,7 @@ local function killAuraLoop()
     end
 
     killAuraRunning = false
+    lockedTarget = nil
 end
 
 -- 监听开关
