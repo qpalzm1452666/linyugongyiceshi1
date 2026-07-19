@@ -129,52 +129,79 @@ ui.ResetOnSpawn = false
 ui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ui.Parent = playerGui
 
--- 悬浮球
-local orb = Instance.new("TextButton")
+-- ========== 精致悬浮球 ==========
+local orb = Instance.new("Frame")
 orb.Name = "Orb"
-orb.Size = UDim2.new(0, 50, 0, 50)
-orb.Position = UDim2.new(1, -70, 1, -70)
+orb.Size = UDim2.new(0, 52, 0, 52)
+orb.Position = UDim2.new(1, -72, 1, -72)
 orb.BackgroundColor3 = C_ACCENT
 orb.BorderSizePixel = 0
-orb.Text = "Ly"
-orb.TextColor3 = Color3.fromRGB(255,255,255)
-orb.TextSize = 15
-orb.Font = Enum.Font.GothamBold
 orb.ZIndex = 100
-orb.AutoButtonColor = false
+orb.Active = true
 orb.Parent = ui
 
 local orbCorner = Instance.new("UICorner")
 orbCorner.CornerRadius = UDim.new(1, 0)
 orbCorner.Parent = orb
 
-local orbStroke = Instance.new("UIStroke")
-orbStroke.Color = Color3.fromRGB(147, 197, 253)
-orbStroke.Thickness = 2.5
-orbStroke.Transparency = 0.3
-orbStroke.Parent = orb
+-- 渐变背景
+local orbGrad = Instance.new("UIGradient")
+orbGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(59, 130, 246)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(37, 99, 235)),
+})
+orbGrad.Rotation = 135
+orbGrad.Parent = orb
 
-local orbGlow = Instance.new("ImageLabel")
+-- 内圈高光
+local orbInner = Instance.new("Frame")
+orbInner.Size = UDim2.new(1, -6, 1, -6)
+orbInner.Position = UDim2.new(0, 3, 0, 3)
+orbInner.BackgroundColor3 = Color3.fromRGB(96, 165, 250)
+orbInner.BackgroundTransparency = 0.6
+orbInner.BorderSizePixel = 0
+orbInner.ZIndex = 101
+local orbInnerC = Instance.new("UICorner")
+orbInnerC.CornerRadius = UDim.new(1, 0)
+orbInnerC.Parent = orbInner
+orbInner.Parent = orb
+
+-- 文字
+local orbText = Instance.new("TextLabel")
+orbText.Size = UDim2.new(1, 0, 1, 0)
+orbText.BackgroundTransparency = 1
+orbText.Text = "Ly"
+orbText.TextColor3 = Color3.fromRGB(255,255,255)
+orbText.TextSize = 16
+orbText.Font = Enum.Font.GothamBold
+orbText.ZIndex = 102
+orbText.Parent = orb
+
+-- 外发光
+local orbGlow = Instance.new("Frame")
 orbGlow.Name = "Glow"
-orbGlow.Size = UDim2.new(1.6, 0, 1.6, 0)
-orbGlow.Position = UDim2.new(-0.3, 0, -0.3, 0)
-orbGlow.BackgroundTransparency = 1
-orbGlow.Image = "rbxassetid://5028857084"
-orbGlow.ImageColor3 = C_ACCENT
-orbGlow.ImageTransparency = 0.85
+orbGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
+orbGlow.Position = UDim2.new(-0.25, 0, -0.25, 0)
+orbGlow.BackgroundColor3 = C_ACCENT
+orbGlow.BackgroundTransparency = 0.9
+orbGlow.BorderSizePixel = 0
 orbGlow.ZIndex = 99
+local glowC = Instance.new("UICorner")
+glowC.CornerRadius = UDim.new(1, 0)
+glowC.Parent = orbGlow
 orbGlow.Parent = orb
 
+-- 呼吸动画
 spawn(function()
     while orb.Parent do
         if not orb.Visible then break end
-        TweenService:Create(orbStroke, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
-            {Transparency = 0.1}):Play()
-        wait(1.2)
+        TweenService:Create(orbGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+            {BackgroundTransparency = 0.75, Size = UDim2.new(1.7, 0, 1.7, 0)}):Play()
+        wait(1.5)
         if not orb.Parent then break end
-        TweenService:Create(orbStroke, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
-            {Transparency = 0.5}):Play()
-        wait(1.2)
+        TweenService:Create(orbGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+            {BackgroundTransparency = 0.92, Size = UDim2.new(1.5, 0, 1.5, 0)}):Play()
+        wait(1.5)
     end
 end)
 
@@ -297,7 +324,7 @@ verLabel.Size = UDim2.new(0, 50, 0, 18)
 verLabel.Position = UDim2.new(0, 110, 0.5, -9)
 verLabel.BackgroundColor3 = C_ACCENT
 verLabel.BackgroundTransparency = 0.85
-verLabel.Text = "v2.6"
+verLabel.Text = "v2.7"
 verLabel.TextColor3 = C_ACCENT
 verLabel.TextSize = 10
 verLabel.Font = Enum.Font.GothamBold
@@ -933,7 +960,7 @@ local function createNoticePage()
     bannerVer.Position = UDim2.new(0, 14, 0, 46)
     bannerVer.BackgroundColor3 = C_ACCENT
     bannerVer.BackgroundTransparency = 0.2
-    bannerVer.Text = "v2.6"
+    bannerVer.Text = "v2.7"
     bannerVer.TextColor3 = Color3.fromRGB(255,255,255)
     bannerVer.TextSize = 11
     bannerVer.Font = Enum.Font.GothamBold
@@ -1072,7 +1099,7 @@ local function createNoticePage()
     lcTitle.Parent = logCard
 
     local logs = {
-        {date = "2025.07.19", ver = "v2.6", text = "UI全面重构，新增漏打检测变色"},
+        {date = "2025.07.19", ver = "v2.7", text = "UI全面重构，新增漏打检测变色"},
         {date = "2025.07.16", ver = "v2.4", text = "修复ESP重生后绘制中断问题"},
         {date = "2025.07.14", ver = "v2.3", text = "新增雷达系统，支持自定义位置"},
     }
@@ -1264,45 +1291,35 @@ end
 
 shrinkBtn.MouseButton1Click:Connect(closePanel)
 
--- ========== 悬浮球拖拽 ==========
+-- ========== 悬浮球拖拽（绑定到 orb 本身，修复点击失效） ==========
 local dragTouchId = nil
 local dragOffset = Vector2.new(0, 0)
 local dragStartPos = Vector2.new(0, 0)
 local isClick = true
 local CLICK_THRESHOLD = 10
 
-local function isOnOrb(pos)
-    local orbPos = orb.AbsolutePosition
-    local orbSize = orb.AbsoluteSize
-    return pos.X >= orbPos.X - 15 and pos.X <= orbPos.X + orbSize.X + 15
-       and pos.Y >= orbPos.Y - 15 and pos.Y <= orbPos.Y + orbSize.Y + 15
-end
-
-local function onInputBegan(input)
+orb.InputBegan:Connect(function(input)
     if not orb.Visible then return end
-    if input.UserInputType ~= Enum.UserInputType.Touch 
-       and input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+    if input.UserInputType ~= Enum.UserInputType.MouseButton1 
+       and input.UserInputType ~= Enum.UserInputType.Touch then
         return
     end
-    if not isOnOrb(input.Position) then return end
 
-    dragTouchId = input.UserInputType == Enum.UserInputType.Touch and input or "mouse"
+    dragTouchId = input
     dragStartPos = input.Position
     dragOffset = Vector2.new(
         input.Position.X - orb.AbsolutePosition.X,
         input.Position.Y - orb.AbsolutePosition.Y
     )
     isClick = true
-    TweenService:Create(orb, TweenInfo.new(0.1), {Size = UDim2.new(0, 54, 0, 54)}):Play()
-end
 
-local function onInputChanged(input)
+    -- 按下缩小效果
+    TweenService:Create(orb, TweenInfo.new(0.1), {Size = UDim2.new(0, 48, 0, 48)}):Play()
+end)
+
+orb.InputChanged:Connect(function(input)
     if not dragTouchId then return end
-    if input.UserInputType ~= Enum.UserInputType.Touch 
-       and input.UserInputType ~= Enum.UserInputType.MouseMovement then
-        return
-    end
-    if dragTouchId ~= "mouse" and dragTouchId ~= input then return end
+    if input ~= dragTouchId then return end
 
     local pos = input.Position
     local dist = (pos - dragStartPos).Magnitude
@@ -1310,38 +1327,35 @@ local function onInputChanged(input)
 
     local screenW = ui.AbsoluteSize.X
     local screenH = ui.AbsoluteSize.Y
-    local orbW = 54
-    local orbH = 54
+    local orbW = 48
+    local orbH = 48
     local newX = math.clamp(pos.X - dragOffset.X, 0, screenW - orbW)
     local newY = math.clamp(pos.Y - dragOffset.Y, 0, screenH - orbH)
     orb.Position = UDim2.new(0, newX, 0, newY)
-end
+end)
 
-local function onInputEnded(input)
+orb.InputEnded:Connect(function(input)
     if not dragTouchId then return end
-    if input.UserInputType ~= Enum.UserInputType.Touch 
-       and input.UserInputType ~= Enum.UserInputType.MouseButton1 then
-        return
-    end
-    if dragTouchId ~= "mouse" and dragTouchId ~= input then return end
+    if input ~= dragTouchId then return end
 
     dragTouchId = nil
+
+    -- 恢复大小
+    TweenService:Create(orb, TweenInfo.new(0.15), {Size = UDim2.new(0, 52, 0, 52)}):Play()
+
     if isClick then
         openPanel()
     else
+        -- 贴边吸附
         local screenW = ui.AbsoluteSize.X
         local orbX = orb.AbsolutePosition.X
-        local orbW = 54
-        local targetX = (orbX + orbW/2 < screenW / 2) and 14 or (screenW - orbW - 14)
-        TweenService:Create(orb, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+        local orbW = 52
+        local targetX = (orbX + orbW/2 < screenW / 2) and 16 or (screenW - orbW - 16)
+        TweenService:Create(orb, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             Position = UDim2.new(0, targetX, 0, orb.AbsolutePosition.Y)
         }):Play()
     end
-end
-
-UserInputService.InputBegan:Connect(onInputBegan)
-UserInputService.InputChanged:Connect(onInputChanged)
-UserInputService.InputEnded:Connect(onInputEnded)
+end)
 
 player.CharacterAdded:Connect(function()
     task.wait(0.5)
