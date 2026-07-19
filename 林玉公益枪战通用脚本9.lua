@@ -33,6 +33,12 @@ local ESP2_Settings = {
     HealthBarColor = Color3.fromRGB(0, 255, 0),
     ChamsFillColor = Color3.fromRGB(119, 120, 255),
     ChamsOutlineColor = Color3.fromRGB(119, 120, 255),
+    ShowRadar = false,
+    RadarShape = "圆形",
+    RadarSize = 120,
+    RadarRange = 200,
+    RadarPosX = 150,
+    RadarPosY = 150,
 }
 
 local ESP2 = {
@@ -71,6 +77,12 @@ local MiscConfig = {
     FireRateValue = 0.05,
     TeleportEnemies = false,
     TeleportDistance = 35,
+    NoRecoil = false,
+    NoSpread = false,
+    FastReload = false,
+    KillAura = false,
+    KillAuraRange = 50,
+    KillAuraPriority = "距离优先",
 }
 
 local FOV_Circle = Drawing.new("Circle")
@@ -1191,6 +1203,165 @@ local function UpdateESP2()
     end
 end
 
+-- ========== 雷达系统 ==========
+local RadarElements = {
+    Background = Drawing.new("Square"),
+    BackgroundCircle = Drawing.new("Circle"),
+    CenterDot = Drawing.new("Circle"),
+    PlayerDots = {},
+}
+
+-- 初始化雷达背景
+RadarElements.Background.Visible = false
+RadarElements.Background.Color = Color3.fromRGB(30, 30, 30)
+RadarElements.Background.Thickness = 1
+RadarElements.Background.Transparency = 0.7
+RadarElements.Background.Filled = true
+
+RadarElements.BackgroundCircle.Visible = false
+RadarElements.BackgroundCircle.Color = Color3.fromRGB(30, 30, 30)
+RadarElements.BackgroundCircle.Thickness = 1
+RadarElements.BackgroundCircle.Transparency = 0.7
+RadarElements.BackgroundCircle.Filled = true
+RadarElements.BackgroundCircle.NumSides = 64
+
+RadarElements.CenterDot.Visible = false
+RadarElements.CenterDot.Color = Color3.fromRGB(255, 255, 255)
+RadarElements.CenterDot.Thickness = 1
+RadarElements.CenterDot.Transparency = 1
+RadarElements.CenterDot.Filled = true
+RadarElements.CenterDot.NumSides = 16
+
+local function getOrCreateRadarDot(plr)
+    if not RadarElements.PlayerDots[plr] then
+        local dot = Drawing.new("Circle")
+        dot.Visible = false
+        dot.Thickness = 1
+        dot.Transparency = 1
+        dot.Filled = true
+        dot.NumSides = 12
+        dot.Radius = 3
+        RadarElements.PlayerDots[plr] = dot
+    end
+    return RadarElements.PlayerDots[plr]
+end
+
+local function destroyRadarDot(plr)
+    local dot = RadarElements.PlayerDots[plr]
+    if dot then
+        pcall(function() dot:Destroy() end)
+        RadarElements.PlayerDots[plr] = nil
+    end
+end
+
+local function updateRadar()
+    if not ESP2_Settings.ShowRadar then
+        RadarElements.Background.Visible = false
+        RadarElements.BackgroundCircle.Visible = false
+        RadarElements.CenterDot.Visible = false
+        for _, dot in pairs(RadarElements.PlayerDots) do
+            dot.Visible = false
+        end
+        return
+    end
+
+    local myChar = player.Character
+    if not myChar then return end
+
+    local myHrp = myChar:FindFirstChild("HumanoidRootPart")
+    if not myHrp then return end
+
+    local radarSize = ESP2_Settings.RadarSize
+    local radarRange = ESP2_Settings.RadarRange
+    local posX = ESP2_Settings.RadarPosX
+    local posY = ESP2_Settings.RadarPosY
+    local centerX = posX + radarSize / 2
+    local centerY = posY + radarSize / 2
+    local isCircle = ESP2_Settings.RadarShape == "圆形"
+
+    -- 更新背景
+    if isCircle then
+        RadarElements.Background.Visible = false
+        RadarElements.BackgroundCircle.Visible = true
+        RadarElements.BackgroundCircle.Position = Vector2.new(centerX, centerY)
+        RadarElements.BackgroundCircle.Radius = radarSize / 2
+        RadarElements.BackgroundCircle.Color = Color3.fromRGB(30, 30, 30)
+        RadarElements.BackgroundCircle.Transparency = 0.7
+    else
+        RadarElements.BackgroundCircle.Visible = false
+        RadarElements.Background.Visible = true
+        RadarElements.Background.Size = Vector2.new(radarSize, radarSize)
+        RadarElements.Background.Position = Vector2.new(posX, posY)
+        RadarElements.Background.Color = Color3.fromRGB(30, 30, 30)
+        RadarElements.Background.Transparency = 0.7
+    end
+
+    -- 中心白点（自己）
+    RadarElements.CenterDot.Visible = true
+    RadarElements.CenterDot.Position = Vector2.new(centerX, centerY)
+    RadarElements.CenterDot.Radius = 3
+    RadarElements.CenterDot.Color = Color3.fromRGB(255, 255, 255)
+
+    local myPos = myHrp.Position
+    local myLook = myHrp.CFrame.LookVector
+    local myRight = myHrp.CFrame.RightVector
+
+    -- 更新玩家点
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player and plr.Character then
+            local char = plr.Character
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            local head = char:FindFirstChild("Head")
+
+            if hrp and humanoid and humanoid.Health > 0 then
+                local dot = getOrCreateRadarDot(plr)
+                local relPos = hrp.Position - myPos
+                local forwardDist = myLook.X * relPos.X + myLook.Z * relPos.Z
+                local rightDist = myRight.X * relPos.X + myRight.Z * relPos.Z
+
+                -- 映射到雷达坐标（上北下南，基于角色朝向）
+                local scale = (radarSize / 2) / radarRange
+                local dotX = centerX + rightDist * scale
+                local dotY = centerY - forwardDist * scale
+
+                -- 检查是否在雷达范围内
+                local dx = dotX - centerX
+                local dy = dotY - centerY
+                local distFromCenter = math.sqrt(dx * dx + dy * dy)
+
+                if distFromCenter <= radarSize / 2 then
+                    dot.Visible = true
+                    dot.Position = Vector2.new(dotX, dotY)
+                    dot.Radius = 3
+
+                    -- 可见=绿色，不可见=红色
+                    if head and IsVisible(head) then
+                        dot.Color = Color3.fromRGB(0, 255, 0)
+                    else
+                        dot.Color = Color3.fromRGB(255, 0, 0)
+                    end
+                else
+                    dot.Visible = false
+                end
+            else
+                local dot = RadarElements.PlayerDots[plr]
+                if dot then dot.Visible = false end
+            end
+        else
+            local dot = RadarElements.PlayerDots[plr]
+            if dot then dot.Visible = false end
+        end
+    end
+
+    -- 清理不存在的玩家
+    for plr, _ in pairs(RadarElements.PlayerDots) do
+        if not Players:FindFirstChild(plr.Name) then
+            destroyRadarDot(plr)
+        end
+    end
+end
+
 local function StartESP2()
     if ESP2.RenderConnection then return end
     ESP2.RenderConnection = RunService.RenderStepped:Connect(function()
@@ -1204,6 +1375,9 @@ local function StartESP2()
                 if elements.Chams then elements.Chams.Enabled = false end
             end
         end
+
+        -- 雷达始终更新（独立于ESP开关）
+        updateRadar()
     end)
 end
 
@@ -1393,10 +1567,41 @@ local success, err = pcall(function()
     end)
 end)
 
+local BulletTargetText = Drawing.new("Text")
+BulletTargetText.Visible = false
+BulletTargetText.Size = 13
+BulletTargetText.Color = Color3.fromRGB(255, 255, 255)
+BulletTargetText.Outline = true
+BulletTargetText.OutlineColor = Color3.fromRGB(0, 0, 0)
+BulletTargetText.Center = false
+BulletTargetText.Font = Drawing.Fonts.UI
+
 RunService.RenderStepped:Connect(function()
     BulletFOV_Circle.Visible = BulletConfig.Enabled
     BulletFOV_Circle.Radius = BulletConfig.FOV
     BulletFOV_Circle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+    -- 显示当前追踪目标名字
+    if BulletConfig.Enabled then
+        local closestHead = getClosestHead()
+        if closestHead and closestHead.Parent then
+            local targetPlayer = Players:GetPlayerFromCharacter(closestHead.Parent)
+            if targetPlayer then
+                BulletTargetText.Text = "追踪: " .. targetPlayer.Name
+                BulletTargetText.Visible = true
+                BulletTargetText.Position = Vector2.new(
+                    Camera.ViewportSize.X / 2 + BulletConfig.FOV + 10,
+                    Camera.ViewportSize.Y / 2 - 6
+                )
+            else
+                BulletTargetText.Visible = false
+            end
+        else
+            BulletTargetText.Visible = false
+        end
+    else
+        BulletTargetText.Visible = false
+    end
 end)
 
 pages[2] = createFeaturePage("绘制", "绘制", "ESP 高级绘制设置", C_PINK)
@@ -1432,6 +1637,30 @@ end).LayoutOrder = 7
 createSlider(pages[2].Container, "最大绘制距离", C_PINK, 50, 5000, 5000, function(v)
     ESP2_Settings.MaxDistance = v
 end).LayoutOrder = 8
+
+createToggle(pages[2].Container, "显示雷达", C_PINK, function(v)
+    ESP2_Settings.ShowRadar = v
+end).LayoutOrder = 9
+
+createDropdown(pages[2].Container, "雷达形状", C_PINK, {"圆形", "方形"}, 1, function(v)
+    ESP2_Settings.RadarShape = v
+end).LayoutOrder = 10
+
+createSlider(pages[2].Container, "雷达大小", C_PINK, 60, 200, 120, function(v)
+    ESP2_Settings.RadarSize = v
+end).LayoutOrder = 11
+
+createSlider(pages[2].Container, "雷达范围", C_PINK, 50, 500, 200, function(v)
+    ESP2_Settings.RadarRange = v
+end).LayoutOrder = 12
+
+createSlider(pages[2].Container, "雷达X位置", C_PINK, 50, 800, 150, function(v)
+    ESP2_Settings.RadarPosX = v
+end).LayoutOrder = 13
+
+createSlider(pages[2].Container, "雷达Y位置", C_PINK, 50, 600, 150, function(v)
+    ESP2_Settings.RadarPosY = v
+end).LayoutOrder = 14
 
 pages[3] = createFeaturePage("自瞄", "自瞄", "自瞄功能详细设置", C_BLUE)
 
@@ -1524,6 +1753,30 @@ createSlider(pages[5].Container, "传送距离", C_BLUE, 15, 80, 35, function(v)
     MiscConfig.TeleportDistance = v
 end).LayoutOrder = 7
 
+createToggle(pages[5].Container, "无后座力", C_BLUE, function(v)
+    MiscConfig.NoRecoil = v
+end).LayoutOrder = 8
+
+createToggle(pages[5].Container, "无扩散", C_BLUE, function(v)
+    MiscConfig.NoSpread = v
+end).LayoutOrder = 9
+
+createToggle(pages[5].Container, "快速换弹", C_BLUE, function(v)
+    MiscConfig.FastReload = v
+end).LayoutOrder = 10
+
+createToggle(pages[5].Container, "杀戮光环", C_BLUE, function(v)
+    MiscConfig.KillAura = v
+end).LayoutOrder = 11
+
+createSlider(pages[5].Container, "光环范围", C_BLUE, 1, 100, 50, function(v)
+    MiscConfig.KillAuraRange = v
+end).LayoutOrder = 12
+
+createDropdown(pages[5].Container, "优先条件", C_BLUE, {"距离优先", "血量优先", "视角优先"}, 1, function(v)
+    MiscConfig.KillAuraPriority = v
+end).LayoutOrder = 13
+
 
 -- ========== 本地传送（仅自己可见） ==========
 -- 【原理】在自己的客户端上，每帧强制将其他玩家模型渲染到面前。
@@ -1585,46 +1838,72 @@ end)
 
 -- ========== 自动开枪 ==========
 local VirtualUser = game:GetService("VirtualUser")
-local lastAutoFire = 0
+local autoFireRunning = false
 
-RunService.RenderStepped:Connect(function()
-    if not MiscConfig.AutoFire then return end
+local function autoFireLoop()
+    if autoFireRunning then return end
+    autoFireRunning = true
 
-    local now = tick()
-    if now - lastAutoFire < MiscConfig.AutoFireDelay then return end
+    while MiscConfig.AutoFire do
+        local now = tick()
+        local shouldFire = false
+        local cameraPos = Camera.CFrame.Position
+        local cameraDir = Camera.CFrame.LookVector
+        local range = MiscConfig.AutoFireRange
 
-    local cameraPos = Camera.CFrame.Position
-    local cameraDir = Camera.CFrame.LookVector
-    local range = MiscConfig.AutoFireRange
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player and plr.Character then
+                local char = plr.Character
+                local head = char:FindFirstChild("Head")
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
 
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= player and plr.Character then
-            local char = plr.Character
-            local head = char:FindFirstChild("Head")
-            local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if head and humanoid and humanoid.Health > 0 then
+                    -- 漏打检测：只打可见目标
+                    if not IsVisible(head) then continue end
 
-            if head and humanoid and humanoid.Health > 0 then
-                -- 漏打检测：只打可见目标
-                if not IsVisible(head) then continue end
-
-                local toTarget = head.Position - cameraPos
-                local dist = toTarget.Magnitude
-                if dist <= range then
-                    local dir = toTarget.Unit
-                    local angle = math.deg(math.acos(math.clamp(cameraDir:Dot(dir), -1, 1)))
-                    if angle <= 15 then
-                        -- 使用 VirtualUser 模拟点击，不干扰移动/跳跃输入
-                        pcall(function()
-                            VirtualUser:Button1Down(Vector2.new(0, 0))
-                            task.wait(0.01)
-                            VirtualUser:Button1Up(Vector2.new(0, 0))
-                        end)
-                        lastAutoFire = now
-                        break
+                    local toTarget = head.Position - cameraPos
+                    local dist = toTarget.Magnitude
+                    if dist <= range then
+                        local dir = toTarget.Unit
+                        local angle = math.deg(math.acos(math.clamp(cameraDir:Dot(dir), -1, 1)))
+                        if angle <= 15 then
+                            shouldFire = true
+                            break
+                        end
                     end
                 end
             end
         end
+
+        if shouldFire then
+            pcall(function()
+                VirtualUser:CaptureController()
+                VirtualUser:Button1Down(Vector2.new(0, 0))
+            end)
+            task.wait(0.02)
+            pcall(function()
+                VirtualUser:Button1Up(Vector2.new(0, 0))
+            end)
+        end
+
+        task.wait(MiscConfig.AutoFireDelay)
+    end
+
+    autoFireRunning = false
+end
+
+-- 监听开关变化启动/停止循环
+local autoFireToggleConn = nil
+local function updateAutoFireLoop()
+    if MiscConfig.AutoFire and not autoFireRunning then
+        task.spawn(autoFireLoop)
+    end
+end
+
+-- 用 Heartbeat 检测开关状态（轻量，不阻塞渲染）
+RunService.Heartbeat:Connect(function()
+    if MiscConfig.AutoFire and not autoFireRunning then
+        task.spawn(autoFireLoop)
     end
 end)
 
@@ -1701,46 +1980,72 @@ end
 
 -- ========== 自动开枪 ==========
 local VirtualUser = game:GetService("VirtualUser")
-local lastAutoFire = 0
+local autoFireRunning = false
 
-RunService.RenderStepped:Connect(function()
-    if not MiscConfig.AutoFire then return end
+local function autoFireLoop()
+    if autoFireRunning then return end
+    autoFireRunning = true
 
-    local now = tick()
-    if now - lastAutoFire < MiscConfig.AutoFireDelay then return end
+    while MiscConfig.AutoFire do
+        local now = tick()
+        local shouldFire = false
+        local cameraPos = Camera.CFrame.Position
+        local cameraDir = Camera.CFrame.LookVector
+        local range = MiscConfig.AutoFireRange
 
-    local cameraPos = Camera.CFrame.Position
-    local cameraDir = Camera.CFrame.LookVector
-    local range = MiscConfig.AutoFireRange
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player and plr.Character then
+                local char = plr.Character
+                local head = char:FindFirstChild("Head")
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
 
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= player and plr.Character then
-            local char = plr.Character
-            local head = char:FindFirstChild("Head")
-            local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if head and humanoid and humanoid.Health > 0 then
+                    -- 漏打检测：只打可见目标
+                    if not IsVisible(head) then continue end
 
-            if head and humanoid and humanoid.Health > 0 then
-                -- 漏打检测：只打可见目标
-                if not IsVisible(head) then continue end
-
-                local toTarget = head.Position - cameraPos
-                local dist = toTarget.Magnitude
-                if dist <= range then
-                    local dir = toTarget.Unit
-                    local angle = math.deg(math.acos(math.clamp(cameraDir:Dot(dir), -1, 1)))
-                    if angle <= 15 then
-                        -- 使用 VirtualUser 模拟点击，不干扰移动/跳跃输入
-                        pcall(function()
-                            VirtualUser:Button1Down(Vector2.new(0, 0))
-                            task.wait(0.01)
-                            VirtualUser:Button1Up(Vector2.new(0, 0))
-                        end)
-                        lastAutoFire = now
-                        break
+                    local toTarget = head.Position - cameraPos
+                    local dist = toTarget.Magnitude
+                    if dist <= range then
+                        local dir = toTarget.Unit
+                        local angle = math.deg(math.acos(math.clamp(cameraDir:Dot(dir), -1, 1)))
+                        if angle <= 15 then
+                            shouldFire = true
+                            break
+                        end
                     end
                 end
             end
         end
+
+        if shouldFire then
+            pcall(function()
+                VirtualUser:CaptureController()
+                VirtualUser:Button1Down(Vector2.new(0, 0))
+            end)
+            task.wait(0.02)
+            pcall(function()
+                VirtualUser:Button1Up(Vector2.new(0, 0))
+            end)
+        end
+
+        task.wait(MiscConfig.AutoFireDelay)
+    end
+
+    autoFireRunning = false
+end
+
+-- 监听开关变化启动/停止循环
+local autoFireToggleConn = nil
+local function updateAutoFireLoop()
+    if MiscConfig.AutoFire and not autoFireRunning then
+        task.spawn(autoFireLoop)
+    end
+end
+
+-- 用 Heartbeat 检测开关状态（轻量，不阻塞渲染）
+RunService.Heartbeat:Connect(function()
+    if MiscConfig.AutoFire and not autoFireRunning then
+        task.spawn(autoFireLoop)
     end
 end)
 
@@ -1754,3 +2059,159 @@ local lastTeleport = 0
 local teleportCooldown = 0.5
 
 -- 尝试通过远程事件发送移动数据（部分游戏有效）
+
+
+-- ========== 暴力功能 ==========
+
+-- 无后座力 + 无扩散 + 快速换弹 + 射速（通过修改枪械配置）
+local function applyGunMods(tool)
+    if not tool:IsA("Tool") then return end
+
+    local config = tool:FindFirstChild("Configuration")
+    if not config then return end
+
+    -- 无后座力
+    if MiscConfig.NoRecoil then
+        local recoil = config:FindFirstChild("Recoil") or config:FindFirstChild("RecoilMultiplier") or config:FindFirstChild("RecoilControl")
+        if recoil then recoil.Value = 0 end
+        local recoilX = config:FindFirstChild("RecoilX") or config:FindFirstChild("HorizontalRecoil")
+        if recoilX then recoilX.Value = 0 end
+        local recoilY = config:FindFirstChild("RecoilY") or config:FindFirstChild("VerticalRecoil")
+        if recoilY then recoilY.Value = 0 end
+        local recoilZ = config:FindFirstChild("RecoilZ")
+        if recoilZ then recoilZ.Value = 0 end
+    end
+
+    -- 无扩散
+    if MiscConfig.NoSpread then
+        local spread = config:FindFirstChild("Spread") or config:FindFirstChild("Accuracy") or config:FindFirstChild("BulletSpread")
+        if spread then spread.Value = 0 end
+        local hipSpread = config:FindFirstChild("HipSpread") or config:FindFirstChild("HipFireSpread")
+        if hipSpread then hipSpread.Value = 0 end
+        local adsSpread = config:FindFirstChild("ADSSpread") or config:FindFirstChild("AimSpread")
+        if adsSpread then adsSpread.Value = 0 end
+    end
+
+    -- 快速换弹
+    if MiscConfig.FastReload then
+        local reload = config:FindFirstChild("ReloadTime") or config:FindFirstChild("Reload") or config:FindFirstChild("ReloadSpeed")
+        if reload then reload.Value = 0.01 end
+    end
+
+    -- 射速修改
+    if MiscConfig.FireRate then
+        local fireRate = config:FindFirstChild("FireRate") or config:FindFirstChild("FireCooldown") or config:FindFirstChild("Cooldown")
+        if fireRate then fireRate.Value = MiscConfig.FireRateValue end
+    end
+end
+
+-- 持续应用枪械修改
+RunService.Heartbeat:Connect(function()
+    local char = player.Character
+    if not char then return end
+
+    for _, tool in ipairs(char:GetChildren()) do
+        if tool:IsA("Tool") then
+            applyGunMods(tool)
+        end
+    end
+
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        for _, tool in ipairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                applyGunMods(tool)
+            end
+        end
+    end
+end)
+
+-- ========== 杀戮光环 ==========
+-- 全方位自动旋转视角 + 自动开火
+-- 范围内有可见敌人时，自动将视角转向最近敌人并开火
+
+local killAuraRunning = false
+
+local function killAuraLoop()
+    if killAuraRunning then return end
+    killAuraRunning = true
+
+    while MiscConfig.KillAura do
+        local myChar = player.Character
+        if not myChar then task.wait(0.1); continue end
+
+        local myHrp = myChar:FindFirstChild("HumanoidRootPart")
+        if not myHrp then task.wait(0.1); continue end
+
+        local myPos = myHrp.Position
+        local range = MiscConfig.KillAuraRange
+        local cameraPos = Camera.CFrame.Position
+        local cameraDir = Camera.CFrame.LookVector
+        local bestTarget = nil
+        local bestScore = math.huge
+
+        -- 全方位扫描：不限于屏幕中心，而是周围所有方向
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player and plr.Character then
+                local char = plr.Character
+                local head = char:FindFirstChild("Head")
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+
+                if head and humanoid and humanoid.Health > 0 then
+                    local dist = (head.Position - myPos).Magnitude
+                    if dist <= range then
+                        -- 漏打检测
+                        if IsVisible(head) then
+                            local score
+                            local priority = MiscConfig.KillAuraPriority
+
+                            if priority == "距离优先" then
+                                score = dist
+                            elseif priority == "血量优先" then
+                                score = humanoid.Health
+                            elseif priority == "视角优先" then
+                                local toTarget = (head.Position - cameraPos).Unit
+                                local angle = math.deg(math.acos(math.clamp(cameraDir:Dot(toTarget), -1, 1)))
+                                score = angle
+                            else
+                                score = dist
+                            end
+
+                            if score < bestScore then
+                                bestScore = score
+                                bestTarget = head
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        if bestTarget then
+            -- 旋转视角朝向目标
+            local targetCF = CFrame.new(Camera.CFrame.Position, bestTarget.Position)
+            Camera.CFrame = Camera.CFrame:Lerp(targetCF, 0.3)
+
+            -- 自动开火
+            pcall(function()
+                VirtualUser:CaptureController()
+                VirtualUser:Button1Down(Vector2.new(0, 0))
+            end)
+            task.wait(0.03)
+            pcall(function()
+                VirtualUser:Button1Up(Vector2.new(0, 0))
+            end)
+        end
+
+        task.wait(0.05)
+    end
+
+    killAuraRunning = false
+end
+
+-- 监听开关
+RunService.Heartbeat:Connect(function()
+    if MiscConfig.KillAura and not killAuraRunning then
+        task.spawn(killAuraLoop)
+    end
+end)
