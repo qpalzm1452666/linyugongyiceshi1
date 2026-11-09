@@ -180,7 +180,7 @@ local function makeModule(cat, cfg)
     function mod:Clean(v)
         if v ~= nil then mod._cleanups[#mod._cleanups + 1] = v end
     end
-    local function register(kind)
+        local function register(kind)
         mod['Create' .. kind] = function(_, ocfg)
             ocfg = ocfg or {}
             local opt = { Name = ocfg.Name, Tooltip = ocfg.Tooltip }
@@ -190,6 +190,54 @@ local function makeModule(cat, cfg)
         end
     end
     for _, k in ipairs(KINDS) do register(k) end
+
+    mod.CreateBind = function(_, ocfg)
+        ocfg = ocfg or {}
+        local opt = { Name = ocfg.Name, Tooltip = ocfg.Tooltip, Enabled = false, _connections = {} }
+        opt.Triggered = {
+            Connect = function(_, fn)
+                table.insert(opt._connections, fn)
+                return {
+                    Disconnect = function()
+                        local i = table.find(opt._connections, fn)
+                        if i then table.remove(opt._connections, i) end
+                    end,
+                }
+            end,
+            Fire = function(_, ...)
+                for _, fn in ipairs(opt._connections) do
+                    task.spawn(fn, ...)
+                end
+            end,
+        }
+        opt._vis = false
+        opt.Object = setmetatable({}, {
+            __index = function(_, k) if k == 'Visible' then return opt._vis end end,
+            __newindex = function(_, k, v) if k == 'Visible' then opt._vis = v and true or false end end,
+        })
+        if ocfg.Name then mod.Options[ocfg.Name] = opt end
+        return opt
+    end
+
+    mod.CreateButton = function(_, ocfg)
+        ocfg = ocfg or {}
+        local opt = { Name = ocfg.Name, Tooltip = ocfg.Tooltip, Enabled = false }
+        opt.Toggle = function()
+            if type(ocfg.Function) == 'function' then pcall(ocfg.Function) end
+        end
+        opt.Object = { Visible = true }
+        if ocfg.Name then mod.Options[ocfg.Name] = opt end
+        return opt
+    end
+
+    mod.CreateHotbarList = function(_, ocfg)
+        local opt = { Name = 'HotbarList', Hotbars = {}, Selected = 1 }
+        function opt:Save(t) if t then t.HotbarList = { Selected = 1, Hotbars = {} } end end
+        function opt:Load(t) end
+        function opt:AddHotbar(d) end
+        return opt
+    end
+
     return mod
 end
 
