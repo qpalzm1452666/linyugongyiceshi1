@@ -69,7 +69,11 @@ pcall(function()
     if writefile and not isfile('newvape/profiles/commit.txt') then
         if not isfolder('newvape') then makefolder('newvape') end
         if not isfolder('newvape/profiles') then makefolder('newvape/profiles') end
+        if not isfolder('newvape/assets') then makefolder('newvape/assets') end
+        if not isfolder('newvape/assets/new') then makefolder('newvape/assets/new') end
         writefile('newvape/profiles/commit.txt', 'main')
+    elseif isfolder and not isfolder('newvape/assets/new') then
+        pcall(function() makefolder('newvape/assets/new') end)
     end
 end)
 
@@ -102,7 +106,7 @@ local function loadJson(path)
 end
 
 -- ══════════════════ 选项系统（9 种，纯数据 + 可见性钩子） ══════════════════
-local KINDS = { 'Toggle', 'Slider', 'TwoSlider', 'Dropdown', 'ColorSlider', 'TextBox', 'TextList', 'Targets', 'Font' }
+local KINDS = { 'Toggle', 'Slider', 'TwoSlider', 'Dropdown', 'ColorSlider', 'TextBox', 'TextList', 'Targets', 'Font', 'Bind', 'Button' }
 
 local function applyOption(opt, kind, cfg)
     opt._kind = kind
@@ -138,6 +142,45 @@ local function applyOption(opt, kind, cfg)
         opt.Walls = { Enabled = cfg.Walls and true or false }
     elseif kind == 'Font' then
         opt.Value = type(cfg.Default) == 'string' and cfg.Default or 'GothamMedium'
+    elseif kind == 'Bind' then
+        -- 按键绑定（Default 为按键名数组，Hold = 按住模式）
+        opt.Keys, opt.KeyNames = {}, {}
+        local defaults = type(cfg.Default) == 'table' and cfg.Default or { cfg.Default }
+        for _, kn in ipairs(defaults) do
+            if type(kn) == 'string' then
+                opt.KeyNames[#opt.KeyNames + 1] = kn
+                local okk, kc = pcall(function() return Enum.KeyCode[kn] end)
+                if okk and kc then opt.Keys[#opt.Keys + 1] = kc end
+            elseif typeof(kn) == 'EnumItem' then
+                opt.Keys[#opt.Keys + 1] = kn
+                opt.KeyNames[#opt.KeyNames + 1] = kn.Name
+            end
+        end
+        opt.Hold = cfg.Hold and true or false
+        opt.Triggered = Instance.new('BindableEvent')
+        vape:Clean(opt.Triggered)
+        if type(cfg.Function) == 'function' then
+            opt.Triggered.Event:Connect(function(isDown)
+                pcall(cfg.Function, isDown)
+            end)
+        end
+        -- 默认按键的全局监听：按下/抬起 → Triggered(isDown)
+        if inputService and #opt.Keys > 0 then
+            vape:Clean(inputService.InputBegan:Connect(function(input, processed)
+                if not processed and input.KeyCode and table.find(opt.Keys, input.KeyCode) then
+                    opt.Triggered:Fire(true)
+                end
+            end))
+            vape:Clean(inputService.InputEnded:Connect(function(input)
+                if input.KeyCode and table.find(opt.Keys, input.KeyCode) then
+                    opt.Triggered:Fire(false)
+                end
+            end))
+        end
+    elseif kind == 'Button' then
+        opt.Trigger = function()
+            if type(cfg.Function) == 'function' then pcall(cfg.Function) end
+        end
     end
     -- .Object：功能代码会写 .Object.Visible 联动显隐；主文件的镜像通过 opt._setVisible 接收
     opt.Object = setmetatable({}, {
@@ -180,7 +223,7 @@ local function makeModule(cat, cfg)
     function mod:Clean(v)
         if v ~= nil then mod._cleanups[#mod._cleanups + 1] = v end
     end
-        local function register(kind)
+    local function register(kind)
         mod['Create' .. kind] = function(_, ocfg)
             ocfg = ocfg or {}
             local opt = { Name = ocfg.Name, Tooltip = ocfg.Tooltip }
@@ -190,54 +233,6 @@ local function makeModule(cat, cfg)
         end
     end
     for _, k in ipairs(KINDS) do register(k) end
-
-    mod.CreateBind = function(_, ocfg)
-        ocfg = ocfg or {}
-        local opt = { Name = ocfg.Name, Tooltip = ocfg.Tooltip, Enabled = false, _connections = {} }
-        opt.Triggered = {
-            Connect = function(_, fn)
-                table.insert(opt._connections, fn)
-                return {
-                    Disconnect = function()
-                        local i = table.find(opt._connections, fn)
-                        if i then table.remove(opt._connections, i) end
-                    end,
-                }
-            end,
-            Fire = function(_, ...)
-                for _, fn in ipairs(opt._connections) do
-                    task.spawn(fn, ...)
-                end
-            end,
-        }
-        opt._vis = false
-        opt.Object = setmetatable({}, {
-            __index = function(_, k) if k == 'Visible' then return opt._vis end end,
-            __newindex = function(_, k, v) if k == 'Visible' then opt._vis = v and true or false end end,
-        })
-        if ocfg.Name then mod.Options[ocfg.Name] = opt end
-        return opt
-    end
-
-    mod.CreateButton = function(_, ocfg)
-        ocfg = ocfg or {}
-        local opt = { Name = ocfg.Name, Tooltip = ocfg.Tooltip, Enabled = false }
-        opt.Toggle = function()
-            if type(ocfg.Function) == 'function' then pcall(ocfg.Function) end
-        end
-        opt.Object = { Visible = true }
-        if ocfg.Name then mod.Options[ocfg.Name] = opt end
-        return opt
-    end
-
-    mod.CreateHotbarList = function(_, ocfg)
-        local opt = { Name = 'HotbarList', Hotbars = {}, Selected = 1 }
-        function opt:Save(t) if t then t.HotbarList = { Selected = 1, Hotbars = {} } end end
-        function opt:Load(t) end
-        function opt:AddHotbar(d) end
-        return opt
-    end
-
     return mod
 end
 
@@ -892,9 +887,18 @@ do
 	end)
 end
 
--- getvapeasset 兜底（无 getcustomasset 的执行器也能跑）
-if not getvapeasset then
-    getvapeasset = function() return 'rbxassetid://0' end
+-- getvapeasset 健壮化：资源下载失败（404/网络/目录缺失）不再炸引擎，返回占位图标
+do
+    local rawGet = getvapeasset
+    if rawGet then
+        getvapeasset = function(path)
+            local ok, res = pcall(rawGet, path)
+            if ok and res then return res end
+            return 'rbxassetid://0'
+        end
+    else
+        getvapeasset = function() return 'rbxassetid://0' end
+    end
 end
 vape.Libraries.getvapeasset = getvapeasset
 
